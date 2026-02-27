@@ -1,0 +1,111 @@
+name: ${COMPOSE_PROJECT_NAME:-myapp}
+
+# ============================================================
+# Development compose — NOT for production
+# Usage: docker compose -f docker-compose.dev.yml up -d
+# ============================================================
+
+services:
+
+  # ── PostgreSQL ──────────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16  # Use pg16 for pgvector support (EDA)
+    # Alternative without vector extension: postgres:16-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-myapp_dev}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d  # optional init scripts
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-myapp_dev}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ── Redis ───────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Adminer (DB GUI — dev only) ─────────────────────────────
+  adminer:
+    image: adminer:latest
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    profiles:
+      - tools  # Only start with: docker compose --profile tools up
+
+  # ── Redis Insight (Redis GUI — dev only) ────────────────────
+  redis-insight:
+    image: redislabs/redisinsight:latest
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    depends_on:
+      - redis
+    profiles:
+      - tools  # Only start with: docker compose --profile tools up
+
+  # ── Mailhog (email testing — dev only) ──────────────────────
+  mailhog:
+    image: mailhog/mailhog:latest
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    profiles:
+      - tools
+
+  # ── Ollama (local LLM — NXIO / AI projects) ─────────────────
+  # Uncomment for NXIO project
+  # ollama:
+  #   image: ollama/ollama:latest
+  #   restart: unless-stopped
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+  #   networks:
+  #     - ai_network
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  # ollama_data:
+
+networks:
+  default:
+    name: ${COMPOSE_PROJECT_NAME:-myapp}_network
+  # ai_network:                        # Uncomment for NXIO
+  #   name: ai_network
+  #   external: true

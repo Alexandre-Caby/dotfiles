@@ -1,0 +1,120 @@
+{
+  // Template: Full polyglot devcontainer
+  // Stack: Node.js 22 + Python 3.12 + Rust stable
+  // Use for: multi-language projects (ex: NXIO agent-manager + MCP servers)
+  "name": "${PROJECT_NAME:-polyglot}",
+  "image": "mcr.microsoft.com/devcontainers/base:trixie",
+
+  "features": {
+    // Node.js (pnpm via corepack)
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22",
+      "nodeGypDependencies": true
+    },
+    // Python (uv for package management)
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.12",
+      "installTools": true
+    },
+    // Rust (stable)
+    "ghcr.io/devcontainers/features/rust:1": {
+      "version": "stable",
+      "profile": "default"
+    },
+    // Go (optional — uncomment if needed)
+    // "ghcr.io/devcontainers/features/go:1": { "version": "1.22" },
+    // Docker-in-Docker (for projects that need docker compose inside the container)
+    // "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // TypeScript / Node.js
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "vitest.explorer",
+        "bradlc.vscode-tailwindcss",
+
+        // Python
+        "ms-python.python",
+        "ms-python.pylance",
+        "charliermarsh.ruff",
+        "ms-toolsai.jupyter",
+
+        // Rust
+        "rust-lang.rust-analyzer",
+        "vadimcn.vscode-lldb",
+        "tamasfe.even-better-toml",
+
+        // General
+        "editorconfig.editorconfig",
+        "github.copilot",
+        "github.vscode-pull-request-github",
+        "eamodio.gitlens",
+        "ms-azuretools.vscode-docker",
+        "streetsidesoftware.code-spell-checker",
+        "streetsidesoftware.code-spell-checker-french"
+      ],
+      "settings": {
+        // Python
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true
+        },
+        // TypeScript
+        "[typescript]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        "[typescriptreact]": {
+          "editor.defaultFormatter": "esbenp.prettier-vscode",
+          "editor.formatOnSave": true
+        },
+        // Rust
+        "rust-analyzer.checkOnSave.command": "clippy",
+        "[rust]": {
+          "editor.formatOnSave": true
+        },
+        // General
+        "editor.rulers": [100],
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true
+      }
+    }
+  },
+
+  // Expose ports commonly used in NXIO / multi-service projects
+  "forwardPorts": [
+    3000,   // Frontend dev server (Vite)
+    4000,   // Backend API
+    5432,   // PostgreSQL
+    6379,   // Redis
+    8080,   // Alternative HTTP
+    9000    // Alt service
+  ],
+
+  "portsAttributes": {
+    "3000": { "label": "Frontend" },
+    "4000": { "label": "API" },
+    "5432": { "label": "PostgreSQL" },
+    "6379": { "label": "Redis" }
+  },
+
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "TAVILY_API_KEY": "${localEnv:TAVILY_API_KEY}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}",
+    "DATABASE_URL": "${localEnv:DATABASE_URL}",
+    "REDIS_URL": "${localEnv:REDIS_URL}"
+  },
+
+  "postCreateCommand": {
+    "install-dotfiles": "~/dotfiles/install.sh",
+    "node-setup": "corepack enable && corepack prepare pnpm@latest --activate 2>/dev/null || true",
+    "uv-install": "pip install uv --quiet 2>/dev/null || true"
+  },
+
+  "remoteUser": "vscode"
+}

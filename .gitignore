@@ -1,0 +1,24 @@
+# Secrets — jamais commités
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editeurs
+.vscode/settings.json
+*.swp
+*~
+
+# Session context (fichiers de travail personnels — ne pas partager)
+CONTEXT.md
+
+# Temporaire
+*.log
+*.tmp

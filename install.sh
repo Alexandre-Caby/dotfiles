@@ -54,11 +54,12 @@ fi
 
 # ── 4. Installer Claude Code ───────────────────────────────
 if ! command -v claude &>/dev/null; then
-  echo "  → Installation de Claude Code"
-  curl -fsSL https://claude.ai/install.sh | sh
+  echo "  → Installation de Claude Code via npm"
+  npm install -g @anthropic-ai/claude-code 2>/dev/null && \
+    echo "  ✓ Claude Code installé : $(claude --version 2>/dev/null || echo 'version inconnue')" || \
+    echo "  ✗ Échec installation Claude Code (vérifier npm)"
   # Ajouter au PATH courant si nécessaire
   export PATH="$HOME/.local/bin:$PATH"
-  echo "  ✓ Claude Code installé : $(claude --version 2>/dev/null || echo 'version inconnue')"
 else
   echo "  ✓ Claude Code déjà présent : $(claude --version 2>/dev/null)"
 fi

@@ -1,4 +1,4 @@
-# Dotfiles
+# Dotfiles — Alexandre Caby
 
 Claude Code configuration synced across machines via Git. Deployed automatically in VSCode devcontainers.
 

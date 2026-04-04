@@ -110,94 +110,9 @@ Run this checklist on EVERY piece of code:
 
 ---
 
-## Language-Specific Standards
+## Coding Conventions — ALL LANGUAGES
 
-### TypeScript / JavaScript
-```
-- Strict mode always (`"strict": true` in tsconfig)
-- Explicit return types on exported functions
-- Prefer `const` over `let`, never `var`
-- Use `unknown` over `any` — narrow with type guards
-- Error handling: typed errors, never catch-all silently
-- Imports: named imports, no barrel files in libraries
-- Naming: camelCase variables/functions, PascalCase types/classes
-- File naming: kebab-case (auth-service.ts)
-- Testing: Vitest preferred, Jest acceptable
-- Formatting: Prettier (auto via hook)
-- Linting: ESLint with strict rules
-```
-
-### Python
-```
-- Type hints on ALL function signatures (params + return)
-- Use dataclasses or pydantic for data structures, not raw dicts
-- f-strings over .format() or % formatting
-- Use pathlib.Path over os.path
-- Context managers for resources (files, connections, locks)
-- Import order: stdlib → third-party → local (isort handles this)
-- Naming: snake_case functions/vars, PascalCase classes, UPPER_SNAKE constants
-- Package management: uv preferred, pip acceptable
-- Testing: pytest exclusively
-- Formatting: ruff format (auto via hook)
-- Linting: ruff check with strict rules
-```
-
-### Rust
-```
-- Use Result<T, E> for fallible operations, never panic in library code
-- Prefer &str over String for function params when ownership not needed
-- Derive traits generously: Debug, Clone, PartialEq as baseline
-- Use thiserror for library errors, anyhow for application errors
-- Prefer iterators over indexing loops
-- Naming: snake_case functions/vars, PascalCase types, SCREAMING_SNAKE constants
-- Modules: one concern per module, pub only what's needed
-- Testing: #[cfg(test)] mod tests in same file for unit, tests/ dir for integration
-- Formatting: rustfmt (auto via hook)
-- Linting: clippy --all-targets (treat warnings as errors)
-```
-
-### C / C++ (Embedded)
-```
-- C11 for firmware, C++17 for application code
-- Fixed-width types always (uint8_t, int32_t, not int/long)
-- Defensive: check NULL pointers, validate array bounds
-- No dynamic allocation in ISR context
-- Volatile for hardware registers and shared ISR variables
-- Naming: snake_case for functions/vars, UPPER_SNAKE for macros/constants
-- Header guards or #pragma once
-- Minimize global state — pass context structs
-- Testing: Unity or CMock for embedded, Google Test for C++
-- Formatting: clang-format (auto via hook)
-```
-
-### Go
-```
-- Accept interfaces, return structs
-- Errors are values — check them explicitly, no blank identifier
-- Context propagation: first param is always ctx context.Context
-- Naming: short variable names in small scopes, descriptive in large
-- Package naming: short, lowercase, no underscores
-- Testing: table-driven tests with t.Run()
-- Formatting: gofmt (auto via hook)
-```
-
-### React / Frontend
-```
-- Functional components only, no class components
-- Custom hooks for shared logic (useAuth, useFetch)
-- State: useState for local, useReducer for complex, context sparingly
-- Props: destructure in function signature, type with interface
-- Keys: meaningful and stable, never array index
-- Effects: minimal dependencies, cleanup functions for subscriptions
-- Naming: PascalCase components, camelCase hooks (useXxx), kebab-case files
-- Styling: Tailwind CSS preferred, CSS modules acceptable
-- Testing: Vitest + Testing Library
-- No prop drilling beyond 2 levels — use context or composition
-```
-
----
-
-## Code Language Rules — ABSOLUTE
+### Language: EVERYTHING in English
 
 | Element | Language | Examples |
 |---|---|---|
@@ -207,14 +122,133 @@ Run this checklist on EVERY piece of code:
 | Log messages | **English** | `logger.info("Connection established")` |
 | Branch names, commits | **English** | `feat/user-authentication` |
 | JSON/config keys | **English** | `{ "maxRetries": 3, "timeout": 5000 }` |
-| **UI text displayed to user** | **French** (or i18n) | See i18n rules below |
-| **User-facing error messages** | **French** (or i18n) | `"Connexion impossible. Réessayez."` |
+| Error messages (technical/logs) | **English** | `throw new Error("Invalid token format")` |
+| **UI text displayed to user** | **Project-defined** | Depends on target audience — see i18n rules |
+| **User-facing error messages** | **Project-defined** | Same language as UI text |
 
 ### i18n Rules
-- Default locale: `fr-FR`
-- Single-locale app (personal/FR) → French strings directly in code
-- Multi-locale or public app → i18n system from day one (i18next, react-intl)
-- Never hardcode English UI text in a French-targeted app
+- UI language is defined per project in the project's `CLAUDE.md` or `CONTEXT.md`
+- If not specified, ask before assuming
+- Single-locale app → strings directly in code in the target language
+- Multi-locale app → i18n system from day one (i18next, react-intl, fluent)
+- Never mix UI languages within the same app without i18n framework
+- All i18n keys in English (`auth.login_error`), values in target locale(s)
+
+### Universal Rules (apply to every language)
+
+**Naming:**
+- Descriptive and self-documenting — no `data`, `temp`, `stuff`, `x`, `ret`, `val`
+- Booleans prefix: `is`, `has`, `can`, `should` → `isAuthenticated`, `hasPermission`
+- Constants: UPPER_SNAKE_CASE everywhere
+- No abbreviations except universally understood ones (`id`, `url`, `http`, `db`, `api`)
+
+**Functions:**
+- Max 40 lines — if longer, extract sub-functions
+- Single responsibility — one function does one thing
+- Max 4 parameters — use an options/config object beyond that
+- Early returns / guard clauses — avoid deep nesting
+- Pure functions preferred — explicit side effects when unavoidable
+
+**Error handling:**
+- Never silently swallow errors (`catch {}`, `catch (e) {}`, `except: pass`)
+- Type errors explicitly — no generic `Error` / `Exception` when avoidable
+- Fail fast — validate inputs at boundaries, not deep inside logic
+- Log errors with context (what failed, with what input, why)
+
+**Files & structure:**
+- Max 300 lines per file — split into modules beyond that
+- One concern per file — no god files
+- Group by feature/domain, not by type (`user/` not `controllers/`, `models/`, `services/`)
+
+**No magic:**
+- No magic numbers — named constants always
+- No magic strings — use enums or const objects
+- No implicit behavior — if a function has a side effect, the name says so
+
+**Performance:**
+- No premature optimization — profile first, optimize second
+- No N+1 queries — batch or join
+- No unbounded collections in memory — paginate or stream
+
+### Formatting (auto-enforced via PostToolUse hooks)
+
+| Language | Formatter | Linter |
+|---|---|---|
+| TypeScript/JavaScript/JSON/CSS | Prettier | ESLint |
+| Python | ruff format | ruff check |
+| Rust | rustfmt | clippy (warnings = errors) |
+| Go | gofmt | go vet |
+| C/C++ | clang-format | clang-tidy |
+
+All formatting is automatic — the PostToolUse hook runs the formatter on every Write/Edit.
+
+---
+
+## Language-Specific Standards
+
+### TypeScript / JavaScript
+- Strict mode always (`"strict": true` in tsconfig)
+- Explicit return types on exported functions
+- Prefer `const` over `let`, never `var`
+- Use `unknown` over `any` — narrow with type guards
+- Imports: named imports, no barrel files in libraries
+- Naming: camelCase variables/functions, PascalCase types/classes
+- File naming: kebab-case (`auth-service.ts`)
+- Testing: Vitest preferred, Jest acceptable
+- Linting: ESLint with strict rules
+
+### Python
+- Type hints on ALL function signatures (params + return)
+- Use dataclasses or pydantic for data structures, not raw dicts
+- f-strings over `.format()` or `%` formatting
+- Use `pathlib.Path` over `os.path`
+- Context managers for resources (files, connections, locks)
+- Import order: stdlib → third-party → local (isort handles this)
+- Naming: snake_case functions/vars, PascalCase classes, UPPER_SNAKE constants
+- Package management: uv preferred, pip acceptable
+- Testing: pytest exclusively
+
+### Rust
+- Use `Result<T, E>` for fallible operations, never panic in library code
+- Prefer `&str` over `String` for function params when ownership not needed
+- Derive traits generously: `Debug`, `Clone`, `PartialEq` as baseline
+- Use `thiserror` for library errors, `anyhow` for application errors
+- Prefer iterators over indexing loops
+- Naming: snake_case functions/vars, PascalCase types, SCREAMING_SNAKE constants
+- Modules: one concern per module, `pub` only what's needed
+- Testing: `#[cfg(test)] mod tests` in same file for unit, `tests/` dir for integration
+- Linting: `clippy --all-targets` (treat warnings as errors)
+
+### C / C++ (Embedded)
+- C11 for firmware, C++17 for application code
+- Fixed-width types always (`uint8_t`, `int32_t`, not `int`/`long`)
+- Defensive: check NULL pointers, validate array bounds
+- No dynamic allocation in ISR context
+- `volatile` for hardware registers and shared ISR variables
+- Naming: snake_case for functions/vars, UPPER_SNAKE for macros/constants
+- Header guards or `#pragma once`
+- Minimize global state — pass context structs
+- Testing: Unity or CMock for embedded, Google Test for C++
+
+### Go
+- Accept interfaces, return structs
+- Errors are values — check them explicitly, no blank identifier
+- Context propagation: first param is always `ctx context.Context`
+- Naming: short variable names in small scopes, descriptive in large
+- Package naming: short, lowercase, no underscores
+- Testing: table-driven tests with `t.Run()`
+
+### React / Frontend
+- Functional components only, no class components
+- Custom hooks for shared logic (`useAuth`, `useFetch`)
+- State: `useState` for local, `useReducer` for complex, context sparingly
+- Props: destructure in function signature, type with interface
+- Keys: meaningful and stable, never array index
+- Effects: minimal dependencies, cleanup functions for subscriptions
+- Naming: PascalCase components, camelCase hooks (`useXxx`), kebab-case files
+- Styling: Tailwind CSS preferred, CSS modules acceptable
+- Testing: Vitest + Testing Library
+- No prop drilling beyond 2 levels — use context or composition
 
 ---
 

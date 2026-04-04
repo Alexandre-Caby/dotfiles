@@ -1,0 +1,58 @@
+{
+  // Template: C/C++ Embedded (STM32, ARM Cortex-M)
+  // Stack: GCC ARM toolchain + CMake + OpenOCD + Node.js (Claude Code)
+  // Use for: firmware NXIO-Lab, NXIO-Home, tout projet bare-metal ARM
+  "name": "${localEnv:PROJECT_NAME:firmware}",
+  "image": "mcr.microsoft.com/devcontainers/base:trixie",
+
+  "features": {
+    // Node.js — requis pour Claude Code (npm) et MCP servers (npx)
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // C/C++
+        "ms-vscode.cpptools",
+        "ms-vscode.cmake-tools",
+        "twxs.cmake",
+        "jeff-hykin.better-cpp-syntax",
+
+        // Embedded
+        "marus25.cortex-debug",
+        "dan-c-underwood.arm",
+
+        // General
+        "editorconfig.editorconfig",
+        "eamodio.gitlens",
+        "streetsidesoftware.code-spell-checker"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.rulers": [100],
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "C_Cpp.default.compilerPath": "/usr/bin/arm-none-eabi-gcc",
+        "C_Cpp.clang_format_fallbackStyle": "LLVM",
+        "cortex-debug.openocdPath": "/usr/bin/openocd"
+      }
+    }
+  },
+
+  // Installer le toolchain ARM + outils embedded
+  "postCreateCommand": {
+    "arm-toolchain": "sudo apt-get update -qq && sudo apt-get install -y -qq gcc-arm-none-eabi gdb-multiarch binutils-arm-none-eabi libnewlib-arm-none-eabi cmake ninja-build openocd stlink-tools clang-format",
+    "unity-test": "git clone --depth 1 https://github.com/ThrowTheSwitch/Unity.git /home/vscode/.unity 2>/dev/null || true"
+  },
+
+  "remoteUser": "vscode",
+
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "TAVILY_API_KEY": "${localEnv:TAVILY_API_KEY}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+  }
+}

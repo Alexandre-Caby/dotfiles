@@ -1,0 +1,44 @@
+{
+  // Template: Base léger — OS + Node.js (pour Claude Code)
+  // Stack: Debian Trixie minimal, ajouter ce dont tu as besoin via features
+  // Use for: projets custom, Go, multi-stack léger, prototypage
+  "name": "${localEnv:PROJECT_NAME:project}",
+  "image": "mcr.microsoft.com/devcontainers/base:trixie",
+
+  "features": {
+    // Node.js — requis pour Claude Code (npm) et MCP servers (npx)
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+    // Décommenter selon le besoin :
+    // "ghcr.io/devcontainers/features/go:1": { "version": "1.22" },
+    // "ghcr.io/devcontainers/features/python:1": { "version": "3.12" },
+    // "ghcr.io/devcontainers/features/rust:1": { "version": "stable" },
+    // "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "editorconfig.editorconfig",
+        "eamodio.gitlens",
+        "streetsidesoftware.code-spell-checker",
+        "streetsidesoftware.code-spell-checker-french"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.rulers": [100],
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true
+      }
+    }
+  },
+
+  "remoteUser": "vscode",
+
+  "remoteEnv": {
+    "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "TAVILY_API_KEY": "${localEnv:TAVILY_API_KEY}",
+    "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
+  }
+}

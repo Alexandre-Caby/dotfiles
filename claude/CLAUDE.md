@@ -331,11 +331,17 @@ Each project can have a `CONTEXT.md` at its root. This file IS the working memor
 
 | Command | Usage |
 |---|---|
+| `/user:init` | Bootstrap projet : devcontainer + config + structure + premier commit |
 | `/user:plan` | Implementation plan with S/M/L breakdown and scope cuts |
+| `/user:new-feature` | Cycle complet : plan → validation → dev TDD → review → commit |
 | `/user:review` | Structured code review since last commit |
 | `/user:test` | Run tests, diagnose failures |
 | `/user:debug` | Structured diagnosis: reproduce → isolate → diagnose → fix |
+| `/user:audit` | Audit complet : qualité + sécurité OWASP/ANSSI + AI slop + dead code |
 | `/user:security-check` | OWASP security audit on changed code |
+| `/user:cleanup` | Nettoyage : dead code + AI slop + simplification + deps inutiles |
+| `/user:pre-commit` | Checks avant commit : lint + format + types + tests + secrets scan |
+| `/user:doc` | Auto-génération docs : README, ARCHITECTURE, API, Doxygen |
 | `/user:context-save` | Save session state to CONTEXT.md |
 
 ### Agents
@@ -383,30 +389,71 @@ Each project can have a `CONTEXT.md` at its root. This file IS the working memor
 
 ---
 
-## Workflows
+## Orchestration — Quand utiliser quoi
 
-**New Feature:**
-1. `/user:plan` → spec + breakdown + risks + scope cuts
-2. Engineering validation gate → approve or redesign
-3. `research-team` (if unknown technology)
-4. `feature-dev-team` (if feature ≥ 3 files)
-5. `/user:review` → code review before commit
-6. Quality & Security Audit (section 4 above)
-7. `git-workflow` → conventional commits + PR desc
+### Dispatch automatique des agents et teams
 
-**Before Release:**
-1. `/user:security-check` → security audit
-2. `dependency-auditor` → CVE + outdated
-3. `/user:test` → verify everything passes
-4. `release-manager` → version bump + changelog + tag
+Claude DOIT sélectionner automatiquement les bons outils selon le contexte. Ne pas attendre qu'on demande un agent — le déclencher dès que la situation le justifie.
 
-**Complex Bug:**
-1. `/user:debug` → structured diagnosis
-2. `docs-fetcher` → check official dependency docs
-3. `architect` → review if cause is structural
+#### Par phase du workflow
 
-**End of Session:**
-1. `/user:context-save` → save state to CONTEXT.md
+| Phase | Commande | Agents auto-activés | Team si complexe |
+|---|---|---|---|
+| **Nouveau projet** | `/user:init` | `devcontainer-init`, `language-advisor` | — |
+| **Planning** | `/user:plan` | `feature-planner`, `architect` | — |
+| **Recherche préalable** | (auto) | `web-search`, `docs-fetcher` | `research-team` |
+| **Développement** | `/user:new-feature` | `tdd-guide`, `test-writer` | `feature-dev-team` si ≥ 3 fichiers |
+| **Debug** | `/user:debug` | `bug-hunter`, `docker-debugger` (si container) | `debug-team` si > 30min |
+| **Review** | `/user:review` | `security-reviewer`, `refactor-cleaner` | — |
+| **Audit complet** | `/user:audit` | `security-reviewer`, `refactor-cleaner`, `dependency-auditor`, `perf-auditor` | — |
+| **Nettoyage** | `/user:cleanup` | `refactor-cleaner` | — |
+| **Pre-commit** | `/user:pre-commit` | `env-auditor`, `git-workflow` | — |
+| **Documentation** | `/user:doc` | `docs-fetcher` (pour vérifier les APIs référencées) | — |
+| **Release** | (manuel) | `release-manager`, `dependency-auditor`, `security-reviewer` | `release-full-team` |
+| **Fin de session** | `/user:context-save` | `context-keeper` | — |
+
+#### Par type de détection (auto-trigger)
+
+| Situation détectée | Action automatique |
+|---|---|
+| Stack inconnu / nouveau framework | → `docs-fetcher` (Context7) + `web-search` (Tavily) |
+| Choix de langage à faire | → `language-advisor` — ne JAMAIS assumer le langage |
+| Code sans tests existants | → `tdd-guide` — setup test infra AVANT de coder |
+| Dépendance ajoutée | → `dependency-auditor` — vérifier CVE + justifier l'ajout |
+| Erreur Docker / conteneur | → `docker-debugger` — diagnostic networking, volumes, perms |
+| Pattern d'API détecté | → `api-designer` — valider le design REST/tRPC avant d'implémenter |
+| Migration DB nécessaire | → `migration-writer` — safe, reversible, tested |
+| Performance suspecte | → `perf-auditor` — profiler avant d'optimiser |
+| Architecture complexe | → `architect` — review coupling, SOLID, scalability |
+
+#### Quand déclencher une team (multi-agents)
+
+| Condition | Team |
+|---|---|
+| Feature touche ≥ 3 fichiers ou front + back | `feature-dev-team` (planner + dev + tests + review en parallèle) |
+| Bug résistant > 30 min, cause inconnue | `debug-team` (bug-hunter + docker-debugger + codebase-explorer) |
+| Technologie jamais utilisée dans le projet | `research-team` (web-search + docs-fetcher + language-advisor) |
+| Release avec gate sécurité | `release-full-team` (release-manager + security-reviewer + dependency-auditor + test-writer) |
+
+### Workflows complets
+
+**Nouveau projet (from scratch) :**
+`/user:init [stack]` → devcontainer + structure + config → `Reopen in Container` → prêt
+
+**Feature standard :**
+`/user:new-feature [description]` → plan → validation → TDD (red-green-refactor) → review → audit → commit
+
+**Feature complexe (≥ 3 fichiers) :**
+`/user:plan` → validation → `feature-dev-team` orchestre le dev → `/user:audit` → commit
+
+**Bug fix :**
+`/user:debug [description]` → reproduce → isolate → fix → test → `/user:pre-commit` → commit
+
+**Avant merge / release :**
+`/user:audit` → `/user:pre-commit` → `release-full-team` (si release)
+
+**Fin de session :**
+`/user:context-save` → état sauvé dans CONTEXT.md pour la prochaine session
 
 ---
 

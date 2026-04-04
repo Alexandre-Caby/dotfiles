@@ -47,6 +47,7 @@ Si non fournies, demander :
 
   "remoteEnv": {
     "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "TAVILY_API_KEY": "${localEnv:TAVILY_API_KEY}",
     "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
   }
 }
@@ -130,9 +131,14 @@ Et adapter le `devcontainer.json` :
 
 ## Règles de génération
 
-1. Toujours passer `ANTHROPIC_API_KEY` et `GITHUB_TOKEN` via `remoteEnv`
-2. Ne jamais hardcoder des credentials dans le fichier
-3. Utiliser les images `devcontainers/` Microsoft — elles ont déjà les outils de base
-4. Pour les projets ML avec GPU : ajouter le device NVIDIA dans docker-compose
-5. Créer le dossier `.devcontainer/` si absent
-6. Toujours proposer les extensions VSCode pertinentes
+1. Toujours passer `ANTHROPIC_API_KEY`, `TAVILY_API_KEY` et `GITHUB_TOKEN` via `remoteEnv`
+2. **Toujours inclure la feature Node.js 22** — même pour Python, Rust, C++, Go. Claude Code et les MCP servers (npx) nécessitent Node.js :
+   ```json
+   "ghcr.io/devcontainers/features/node:1": { "version": "22" }
+   ```
+3. Ne jamais hardcoder des credentials dans le fichier
+4. **Ne PAS ajouter `install.sh` dans postCreateCommand** — le mécanisme VSCode dotfiles feature s'en charge automatiquement via `dev.containers.dotfilesRepository`
+5. Utiliser les images `devcontainers/` Microsoft — elles ont déjà les outils de base
+6. Pour les projets ML avec GPU : ajouter le device NVIDIA dans docker-compose
+7. Créer le dossier `.devcontainer/` si absent
+8. Toujours proposer les extensions VSCode pertinentes

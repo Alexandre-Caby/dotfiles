@@ -144,18 +144,55 @@ if ! grep -q '\.local/bin' "$HOME/.bashrc" 2>/dev/null; then
   echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
 fi
 
+# ── 10. Validation post-install ────────────────────────────
 echo ""
-echo "✅ Dotfiles installés avec succès"
-echo "   ~/.claude → $CLAUDE_CONFIG"
+echo "🔍 Validation de l'installation..."
+ERRORS=0
+if [ -L "$HOME/.claude" ]; then
+  echo "  ✓ Symlink ~/.claude → $(readlink -f "$HOME/.claude")"
+else
+  echo "  ✗ Symlink ~/.claude manquant"
+  ERRORS=$((ERRORS+1))
+fi
+if [ -f "$HOME/.claude/CLAUDE.md" ]; then
+  echo "  ✓ CLAUDE.md trouvé"
+else
+  echo "  ✗ CLAUDE.md introuvable"
+  ERRORS=$((ERRORS+1))
+fi
+if [ -f "$HOME/.claude/settings.json" ]; then
+  echo "  ✓ settings.json trouvé"
+else
+  echo "  ✗ settings.json introuvable"
+  ERRORS=$((ERRORS+1))
+fi
+if command -v claude &>/dev/null; then
+  echo "  ✓ Claude Code dans PATH : $(claude --version 2>/dev/null || echo 'version inconnue')"
+else
+  echo "  ✗ Claude Code pas dans PATH"
+  ERRORS=$((ERRORS+1))
+fi
+if [ -d "$HOME/.claude/agents" ]; then
+  AGENT_COUNT=$(ls "$HOME/.claude/agents/"*.md 2>/dev/null | wc -l)
+  echo "  ✓ $AGENT_COUNT agents disponibles"
+else
+  echo "  ✗ Dossier agents/ introuvable"
+  ERRORS=$((ERRORS+1))
+fi
+if [ -d "$HOME/.claude/commands" ]; then
+  CMD_COUNT=$(ls "$HOME/.claude/commands/"*.md 2>/dev/null | wc -l)
+  echo "  ✓ $CMD_COUNT slash commands disponibles"
+else
+  echo "  ✗ Dossier commands/ introuvable"
+  ERRORS=$((ERRORS+1))
+fi
+
 echo ""
-echo "   Agents disponibles :"
-ls "$CLAUDE_CONFIG/agents/" 2>/dev/null | grep '\.md$' | sed 's/\.md$//' | sed 's/^/     • /' || true
-echo ""
-echo "   Teams disponibles :"
-ls "$CLAUDE_CONFIG/agents/teams/" 2>/dev/null | grep '\.md$' | sed 's/\.md$//' | sed 's/^/     • /' || true
-echo ""
-echo "   Skills disponibles :"
-ls "$CLAUDE_CONFIG/skills/" 2>/dev/null | sed 's/^/     • /' || true
+if [ $ERRORS -eq 0 ]; then
+  echo "✅ Dotfiles installés avec succès — 0 erreur"
+else
+  echo "⚠  Dotfiles installés avec $ERRORS erreur(s) — vérifier ci-dessus"
+fi
 echo ""
 echo "   MCP servers configurés :"
 command -v claude &>/dev/null && claude mcp list 2>/dev/null | sed 's/^/     • /' || echo "     (claude non disponible dans ce shell)"

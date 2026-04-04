@@ -1,145 +1,251 @@
-# Claude Code — Contexte global d'Alexandre
+# Claude Code — Configuration globale
 
-## Profil développeur
+## ⛔ Critical Rules — NON-NEGOTIABLE
 
-Développeur polyglotte travaillant sur des projets variés : applications web fullstack, systèmes embarqués, ML/IA, simulation 3D (UE5/Blender), et outils hardware. Environnement de développement : Windows + WSL2 + Docker (devcontainers via VSCode). Deux machines synchronisées via ce dotfiles repo.
+1. **Read before write** — ALWAYS read existing code before modifying or proposing changes
+2. **Code in English** — Variables, functions, classes, commits, comments, logs: English. UI text: French
+3. **Never assume the stack** — Analyze constraints before choosing a language or framework
+4. **No code without tests** — EVERY piece of code must have tests. No exceptions. Write tests, run them, prove it works.
+5. **No unsolicited files** — No README, docs, or config files unless explicitly asked
+6. **No unjustified deps** — Every new dependency must be argued; prefer stdlib when possible
+7. **CONTEXT.md first** — If it exists at project root, read it before doing anything
+8. **Verify before done** — Never mark a task complete without proving it works (run tests, check logs, demonstrate correctness)
+9. **No AI slop** — Zero tolerance for verbose useless comments, obvious code descriptions, filler text
 
-## ⚠️ Philosophie de langage — RÈGLE FONDAMENTALE
+---
 
-**Ne jamais supposer un langage ou une stack. Toujours choisir selon les contraintes du projet.**
+## Workflow Orchestration
 
-Avant de proposer une implémentation, analyser :
-1. Quelle est la nature du problème ? (performance, prototypage, web, embarqué, data...)
-2. Quelles contraintes existent ? (runtime, mémoire, écosystème existant, équipe...)
-3. Quel est le langage le plus adapté — pas le plus familier par défaut
+### 1. Plan Mode Default
+- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
+- If something goes sideways, STOP and re-plan immediately — don't keep pushing
+- Write detailed specs upfront to reduce ambiguity
+- Use plan mode for verification steps, not just building
 
-### Matrice de décision
+### 2. Engineering Validation Gate
+Before implementing ANY plan, ask:
+- "Would a senior engineer approve this?" — if not, redesign
+- "Is there a simpler solution?" — complexity is a cost, not a feature
+- "Is this the right abstraction level?" — not too generic, not too specific
+- "What are the failure modes?" — think about what breaks, not just what works
 
-| Contexte | Langage recommandé | Pourquoi |
+### 3. Implementation + Test (ALWAYS TOGETHER)
+- One task at a time, focused execution
+- Minimal impact: changes should only touch what's necessary
+- Find root causes, not symptoms — no temporary fixes
+- Every change as simple as possible — if it feels complex, step back
+- **Write tests IMMEDIATELY after writing code** — not later, not "if time permits"
+- Run the test suite after every change. If tests fail, fix before moving on.
+- If no test infrastructure exists, set it up FIRST before writing feature code.
+
+### Test Mandate
+```
+Code written → Tests written → Tests pass → THEN move to next task
+```
+- Unit tests: every function with logic
+- Integration tests: every API endpoint, every DB operation
+- Edge cases: null, empty, invalid, boundary, error paths
+- If you can't test it, you can't ship it
+- Coverage target: 80%+ on new code
+
+### 4. Quality & Security Audit (mandatory before commit)
+Run this checklist on EVERY piece of code:
+
+**AI Slop Detection:**
+- Remove verbose/obvious comments (`// increment counter` before `i++`)
+- Remove filler code that adds no value
+- Remove over-abstraction (no `AbstractFactoryProviderManager`)
+- Ensure comments explain WHY, never WHAT
+- Check for hallucinated APIs or non-existent methods
+
+**Dead Code & Cleanup:**
+- Remove unused imports, variables, functions
+- Remove commented-out code blocks
+- Remove unreachable code paths
+- Remove unused parameters
+
+**Code Quality:**
+- Simplify nested conditionals (early returns, guard clauses)
+- Extract repeated logic (DRY, but don't over-abstract)
+- Ensure consistent naming within the file and project
+- Check cyclomatic complexity — refactor if > 10
+
+**Security (OWASP):**
+- Validate all user inputs
+- No secrets, tokens, or keys in code
+- Parameterized queries (never string-concat SQL)
+- Output encoding for XSS prevention
+- Check file permissions and path traversal
+
+### 5. Self-Improvement Loop
+- After ANY correction from the user, internalize the pattern
+- Write rules for yourself that prevent the same mistake
+- Review project conventions at session start
+
+---
+
+## Core Principles
+
+- **Simplicity First** — Make every change as simple as possible. Impact minimal code.
+- **No Laziness** — Find root causes. No temporary fixes. Senior developer standards.
+- **Minimal Impact** — Changes should only touch what's necessary. Avoid introducing bugs.
+- **Demand Elegance** — For non-trivial changes: pause and ask "is there a more elegant way?"
+- **Autonomous Bug Fixing** — When given a bug report: just fix it. Don't ask for hand-holding.
+
+---
+
+## Language Selection — MANDATORY ANALYSIS
+
+**Never assume a language. Always choose based on project constraints.**
+
+| Context | Language | Why |
 |---|---|---|
-| API web, fullstack, tooling | **TypeScript/Node.js** | Écosystème npm, typage fort, même langage front/back |
-| ML, data science, IA, prototypage rapide | **Python** | Écosystème scientifique, bibliothèques ML |
-| Performance critique, systèmes, WASM | **Rust** | Sécurité mémoire, zéro-overhead, pas de GC |
-| CLI tools, microservices, concurrence haute | **Go** | Binaire unique, goroutines, déploiement simple |
-| Embarqué, UE5 plugins, hardware, bas niveau | **C/C++** | Contrôle mémoire total, accès hardware direct |
-| Microcontrôleurs (prototypage rapide) | **MicroPython** | REPL, rapidité de test |
-| Scripting système, glue code | **Bash** | Natif, sans dépendances |
+| API web, fullstack, tooling | **TypeScript/Node.js** | npm ecosystem, strong typing, same front/back |
+| ML, data science, AI, rapid prototyping | **Python** | Scientific ecosystem, ML libraries |
+| Performance critical, systems, WASM | **Rust** | Memory safety, zero-overhead, no GC |
+| CLI tools, microservices, high concurrency | **Go** | Single binary, goroutines, simple deploy |
+| Embedded, UE5 plugins, hardware, low-level | **C/C++** | Total memory control, direct hardware access |
+| MCU rapid prototyping | **MicroPython** | REPL, fast iteration |
+| System scripting, glue code | **Bash** | Native, zero deps |
 
-**Ne jamais proposer Python pour un backend web si TypeScript/Go/Rust est plus approprié.**
-**Ne jamais proposer Node.js pour du ML si Python est la norme de l'écosystème.**
+---
 
-## Projets connus
+## Language-Specific Standards
 
-### EDA
-Monorepo TypeScript (pnpm workspaces). Apps : client + server. Packages : ai-engine, shared-schema, ui-kit, **solvers-rs (Rust)**. Infrastructure : PostgreSQL+pgvector, Redis. Stack : TypeScript principal, Rust pour les solveurs performance-critiques.
-
-### Syplay
-Fullstack Node.js. Backend : Express + Prisma + SQLite + Redis. Frontend : Vite + React + Tailwind. Reverse proxy : Nginx. Deploy : Docker Compose.
-
-### Project-Nero
-Projet multi-couches :
-- Microcontrôleur + ML embarqué → Python/MicroPython
-- World simulation (AI lab) → Python + Ollama + TinyML (TensorFlow/GPU) + Unsloth
-- Interface 3D → Unreal Engine 5 + Blender
-- MCP servers → Node.js (unreal-mcp, everness), Python (blender-mcp)
-- Agent manager → Python + uv
-
-### Hantek-docker
-Conteneur VNC/USB pour oscilloscope OpenHantek.
-
-## Environnement Docker/WSL
-
-- Tous les projets tournent dans des devcontainers VSCode
-- Image de base variable : `mcr.microsoft.com/devcontainers/base:trixie`, node, python slim, etc.
-- Docker Desktop via WSL2 — chemins Linux dans WSL (`/home/user/...`), pas Windows (`C:\...`)
-- `host.docker.internal` pour accéder à l'hôte depuis un conteneur
-- Réseau Docker dédié : `ai_network` pour les outils AI/MCP (Project-Nero)
-
-### Commandes Docker fréquentes
-```bash
-docker compose up -d          # Lancer les services
-docker compose logs -f        # Suivre les logs
-docker compose exec <svc> sh  # Shell dans un service
-docker ps                     # Conteneurs actifs
-docker network ls             # Réseaux disponibles
+### TypeScript / JavaScript
+```
+- Strict mode always (`"strict": true` in tsconfig)
+- Explicit return types on exported functions
+- Prefer `const` over `let`, never `var`
+- Use `unknown` over `any` — narrow with type guards
+- Error handling: typed errors, never catch-all silently
+- Imports: named imports, no barrel files in libraries
+- Naming: camelCase variables/functions, PascalCase types/classes
+- File naming: kebab-case (auth-service.ts)
+- Testing: Vitest preferred, Jest acceptable
+- Formatting: Prettier (auto via hook)
+- Linting: ESLint with strict rules
 ```
 
-## MCP servers (Claude Desktop — hors devcontainers)
+### Python
+```
+- Type hints on ALL function signatures (params + return)
+- Use dataclasses or pydantic for data structures, not raw dicts
+- f-strings over .format() or % formatting
+- Use pathlib.Path over os.path
+- Context managers for resources (files, connections, locks)
+- Import order: stdlib → third-party → local (isort handles this)
+- Naming: snake_case functions/vars, PascalCase classes, UPPER_SNAKE constants
+- Package management: uv preferred, pip acceptable
+- Testing: pytest exclusively
+- Formatting: ruff format (auto via hook)
+- Linting: ruff check with strict rules
+```
 
-Ces MCP tournent sur l'hôte Windows via Claude Desktop, pas dans les devcontainers :
-- `unreal_API` — contrôle UE5 via Remote Control API (ports 30010/30020)
-- `blender` — contrôle Blender via Python addon (port 9876)
-- `unreal_everness` — génération monde procédural
-- `unreal_bridge` — pont Everness ↔ UE5 (Redis)
+### Rust
+```
+- Use Result<T, E> for fallible operations, never panic in library code
+- Prefer &str over String for function params when ownership not needed
+- Derive traits generously: Debug, Clone, PartialEq as baseline
+- Use thiserror for library errors, anyhow for application errors
+- Prefer iterators over indexing loops
+- Naming: snake_case functions/vars, PascalCase types, SCREAMING_SNAKE constants
+- Modules: one concern per module, pub only what's needed
+- Testing: #[cfg(test)] mod tests in same file for unit, tests/ dir for integration
+- Formatting: rustfmt (auto via hook)
+- Linting: clippy --all-targets (treat warnings as errors)
+```
 
-## Conventions de développement
+### C / C++ (Embedded)
+```
+- C11 for firmware, C++17 for application code
+- Fixed-width types always (uint8_t, int32_t, not int/long)
+- Defensive: check NULL pointers, validate array bounds
+- No dynamic allocation in ISR context
+- Volatile for hardware registers and shared ISR variables
+- Naming: snake_case for functions/vars, UPPER_SNAKE for macros/constants
+- Header guards or #pragma once
+- Minimize global state — pass context structs
+- Testing: Unity or CMock for embedded, Google Test for C++
+- Formatting: clang-format (auto via hook)
+```
 
-### ⚠️ Langue du code — RÈGLE ABSOLUE
+### Go
+```
+- Accept interfaces, return structs
+- Errors are values — check them explicitly, no blank identifier
+- Context propagation: first param is always ctx context.Context
+- Naming: short variable names in small scopes, descriptive in large
+- Package naming: short, lowercase, no underscores
+- Testing: table-driven tests with t.Run()
+- Formatting: gofmt (auto via hook)
+```
 
-**Le code est toujours en anglais. Sans exception.**
+### React / Frontend
+```
+- Functional components only, no class components
+- Custom hooks for shared logic (useAuth, useFetch)
+- State: useState for local, useReducer for complex, context sparingly
+- Props: destructure in function signature, type with interface
+- Keys: meaningful and stable, never array index
+- Effects: minimal dependencies, cleanup functions for subscriptions
+- Naming: PascalCase components, camelCase hooks (useXxx), kebab-case files
+- Styling: Tailwind CSS preferred, CSS modules acceptable
+- Testing: Vitest + Testing Library
+- No prop drilling beyond 2 levels — use context or composition
+```
 
-| Élément | Langue | Exemples |
+---
+
+## Code Language Rules — ABSOLUTE
+
+| Element | Language | Examples |
 |---|---|---|
-| Noms de variables, fonctions, classes | **Anglais** | `userProfile`, `fetchData`, `parseConfig` |
-| Noms de fichiers, modules, packages | **Anglais** | `auth-service.ts`, `data_processor.py` |
-| Commentaires de code | **Anglais** | `// Check if token is expired` |
-| Messages de log | **Anglais** | `logger.info("Connection established")` |
-| Noms de branches, commits | **Anglais** | `feat/user-authentication` |
-| Clés d'objets JSON/config internes | **Anglais** | `{ "maxRetries": 3, "timeout": 5000 }` |
-| **Textes UI affichés à l'utilisateur** | **Français** (ou i18n) | Voir règle i18n ci-dessous |
-| **Messages d'erreur utilisateur** | **Français** (ou i18n) | `"Connexion impossible. Réessayez."` |
+| Variables, functions, classes | **English** | `userProfile`, `fetchData`, `parseConfig` |
+| File names, modules, packages | **English** | `auth-service.ts`, `data_processor.py` |
+| Code comments | **English** | `// Check if token is expired` |
+| Log messages | **English** | `logger.info("Connection established")` |
+| Branch names, commits | **English** | `feat/user-authentication` |
+| JSON/config keys | **English** | `{ "maxRetries": 3, "timeout": 5000 }` |
+| **UI text displayed to user** | **French** (or i18n) | See i18n rules below |
+| **User-facing error messages** | **French** (or i18n) | `"Connexion impossible. Réessayez."` |
 
-### ⚠️ Règle i18n — Textes affichés à l'utilisateur
+### i18n Rules
+- Default locale: `fr-FR`
+- Single-locale app (personal/FR) → French strings directly in code
+- Multi-locale or public app → i18n system from day one (i18next, react-intl)
+- Never hardcode English UI text in a French-targeted app
 
-Les textes visibles par l'utilisateur final sont **en français par défaut**, avec support i18n si l'app a une audience internationale.
+---
 
-**Approche selon le type de projet :**
+## Documentation — Doxygen Style
 
-- **App mono-locale (usage perso/FR)** → Textes directement en français dans le code
-  ```typescript
-  throw new Error("Identifiants invalides")
-  toast.error("Connexion au serveur impossible")
-  ```
+All public functions MUST have Doxygen-style documentation.
 
-- **App multi-locale ou publique** → Système i18n dès le départ (i18next, react-intl, fluent)
-  ```typescript
-  // Clés en anglais, valeurs traduites
-  t('auth.invalid_credentials')  // → "Identifiants invalides" (fr) / "Invalid credentials" (en)
-  ```
+**Rules:**
+- `@brief`: one concise line describing the function
+- Document ALL public params, return values, and possible errors
+- Inline comments (`//`) explain the WHY, never the WHAT
+- No obvious comments: `// increment counter` before `i++` is forbidden
+- Document side effects and non-obvious preconditions
 
-- **Locale par défaut** : `fr-FR`. Détecter `navigator.language` ou `Accept-Language` header si pertinent.
-- **Jamais** de texte UI hardcodé en anglais dans une app à destination française.
-
-### ⚠️ Commentaires — Style Doxygen
-
-Les commentaires de documentation suivent le style Doxygen, adapté à chaque langage.
-
-**TypeScript / JavaScript — JSDoc compatible Doxygen :**
+**TypeScript:**
 ```typescript
 /**
  * @brief Authenticates a user with email and password.
- *
- * Validates credentials against the database and returns a signed JWT token.
- * Throws an AuthError if credentials are invalid or the account is locked.
- *
  * @param email - The user's email address
  * @param password - The plaintext password to verify
  * @returns A signed JWT token string
  * @throws {AuthError} If credentials are invalid
- * @throws {DatabaseError} If the database is unreachable
  */
 async function authenticateUser(email: string, password: string): Promise<string>
 ```
 
-**Python — Doxygen / Google style :**
+**Python:**
 ```python
 def train_model(dataset: Dataset, epochs: int = 10) -> Model:
     """
     @brief Trains the neural network on the provided dataset.
-
-    Runs the training loop for the specified number of epochs,
-    applying early stopping if validation loss plateaus.
-
     @param dataset: The training dataset with labels
     @param epochs: Number of training epochs (default: 10)
     @return: The trained model instance
@@ -147,14 +253,10 @@ def train_model(dataset: Dataset, epochs: int = 10) -> Model:
     """
 ```
 
-**C / C++ — Doxygen natif :**
-```cpp
+**C/C++:**
+```c
 /**
  * @brief Reads a sensor sample from the ADC channel.
- *
- * Performs a blocking read on the specified ADC channel and returns
- * the raw 12-bit value. Timeout is fixed at 100ms.
- *
  * @param channel ADC channel index (0-7)
  * @param[out] value Pointer to store the read value
  * @return true if read succeeded, false on timeout
@@ -162,184 +264,170 @@ def train_model(dataset: Dataset, epochs: int = 10) -> Model:
 bool adc_read_sample(uint8_t channel, uint16_t* value);
 ```
 
-**Rust — Doc comments :**
+**Rust:**
 ```rust
 /// Parses a configuration file and returns a validated Config struct.
 ///
 /// # Arguments
 /// * `path` - Path to the TOML configuration file
 ///
-/// # Returns
-/// A `Result` containing the parsed `Config` or a `ConfigError`
-///
 /// # Errors
 /// Returns `ConfigError::NotFound` if the file doesn't exist.
-/// Returns `ConfigError::ParseError` if the TOML is malformed.
-///
-/// # Example
-/// ```
-/// let config = parse_config("config.toml")?;
-/// ```
 pub fn parse_config(path: &Path) -> Result<Config, ConfigError>
 ```
 
-**Règles commentaires :**
-- `@brief` : une ligne de description concise
-- Documenter **tous** les paramètres publics, valeurs de retour, et erreurs possibles
-- Les commentaires inline (`//`) expliquent le **pourquoi**, pas le **quoi**
-- Pas de commentaires évidents : `// increment counter` avant `i++` est inutile
-- Documenter les side effects et les préconditions non-évidentes
+---
 
-### Git
-- Branches : `feat/`, `fix/`, `chore/`, `docs/`, `refactor/`
-- Commits : conventional commits en anglais (`feat:`, `fix:`, `chore:`, `docs:`)
-- Ne jamais committer de secrets, tokens, ou clés API
+## Git Conventions
 
-### Code
-- Toujours typer explicitement (TypeScript strict, Python type hints, Rust types)
-- Sécurité par défaut : valider les inputs, pas de secrets hardcodés
-- Préférer la composition à l'héritage
-- Nommer les choses par ce qu'elles **font**, pas par ce qu'elles **sont** (`getUserById` > `userGetter`)
+- Branches: `feat/`, `fix/`, `chore/`, `docs/`, `refactor/`, `test/`
+- Commits: conventional commits in English (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`)
+- Never commit secrets, tokens, or API keys
+- Never force push to main/master
+- Squash-merge feature branches when appropriate
+- Commit messages: imperative mood, explain WHY not WHAT
 
-### Docker
-- Images slim ou distroless en production
-- Multi-stage builds pour les builds compilés (Rust, TypeScript)
-- Variables sensibles via `.env` (jamais dans docker-compose.yml)
-- Toujours définir des healthchecks sur les services critiques
+---
 
-## Catalogue des agents disponibles
+## Docker / WSL Environment
 
-### Agents spécialisés (invocation directe)
+- All projects run in VSCode devcontainers
+- Docker Desktop via WSL2 — Linux paths in WSL (`/home/user/...`), not Windows
+- `host.docker.internal` to access host from container
+- Images: slim or distroless in production
+- Multi-stage builds for compiled languages (Rust, TypeScript)
+- Sensitive variables via `.env` (never in docker-compose.yml)
+- Always define healthchecks on critical services
 
-| Agent | Modèle | Usage |
+---
+
+## Task Management
+
+1. **Plan First**: Write plan with checkable items before starting
+2. **Verify Plan**: Check in — does the engineer approve?
+3. **Track Progress**: Mark items complete as you go
+4. **Explain Changes**: High-level summary at each step
+5. **Document Results**: Add review section after completion
+6. **Capture Lessons**: After corrections, update approach
+
+---
+
+## CONTEXT.md — Session Memory
+
+Each project can have a `CONTEXT.md` at its root. This file IS the working memory between sessions.
+
+**Rules:**
+- ALWAYS read `CONTEXT.md` first if it exists
+- `CONTEXT.md` is in `.gitignore` — personal working file, not shared code
+- If `CONTEXT.md` contradicts actual code, code is always right
+- "Next session: first 3 actions" must be concrete and executable
+- Use `/user:context-save` to generate/update at end of session
+
+---
+
+## Available Tools
+
+### Slash Commands
+
+| Command | Usage |
+|---|---|
+| `/user:plan` | Implementation plan with S/M/L breakdown and scope cuts |
+| `/user:review` | Structured code review since last commit |
+| `/user:test` | Run tests, diagnose failures |
+| `/user:debug` | Structured diagnosis: reproduce → isolate → diagnose → fix |
+| `/user:security-check` | OWASP security audit on changed code |
+| `/user:context-save` | Save session state to CONTEXT.md |
+
+### Agents
+
+| Agent | Model | Usage |
 |---|---|---|
-| `language-advisor` | Sonnet | Choix du langage/stack selon le contexte projet |
-| `architect` | Opus | Review architecture, couplage, scalabilité, red flags |
-| `codebase-explorer` | Sonnet | Cartographie d'une base de code, data flow, dépendances |
-| `feature-planner` | Opus | Spec feature complète : critères, tâches, risques, effort |
-| `test-writer` | Sonnet | Tests complets (Vitest/pytest/Rust/Go) sur nouveau code |
-| `git-workflow` | Haiku | Commits conventional, PR desc, changelog, branch naming |
-| `web-search` | Haiku | Recherche web via Tavily/DuckDuckGo/GitHub/npm/PyPI |
-| `docs-fetcher` | Sonnet | Docs live via Context7 MCP, versions exactes, API surface |
-| `release-manager` | Haiku | Release complète : version bump, changelog, tag git, Docker |
-| `dependency-auditor` | Haiku | Audit sécurité deps (npm/pip/cargo/go), CVE, outdated |
-| `docker-debugger` | Sonnet | Debug Docker/WSL2 : health, networking, volumes, perms |
-| `devcontainer-init` | Sonnet | Génère `.devcontainer/devcontainer.json` adapté au projet |
-| `bug-hunter` | Sonnet | Diagnostic structuré : reproduce → isolate → root cause → fix |
-| `perf-auditor` | Sonnet | Bottlenecks runtime, mémoire, bundle, SQL, GPU/ML |
-| `api-designer` | Sonnet | Conception REST/tRPC/MCP : routes, schemas Zod/Pydantic, stubs |
-| `migration-writer` | Haiku | Migrations DB (Prisma/Alembic/Diesel/SQL), safe & réversibles |
-| `env-auditor` | Haiku | Cohérence .env / .env.example / devcontainer.json |
-| `context-keeper` | Haiku | Sérialise/restaure l'état de session dans `CONTEXT.md` |
+| `language-advisor` | Sonnet | Language/stack selection based on project context |
+| `architect` | Opus | Architecture review, coupling, scalability, red flags |
+| `codebase-explorer` | Sonnet | Codebase mapping, data flow, dependencies |
+| `feature-planner` | Opus | Full feature spec: criteria, tasks, risks, effort |
+| `test-writer` | Sonnet | Complete tests (Vitest/pytest/Rust/Go) on new code |
+| `git-workflow` | Haiku | Conventional commits, PR desc, changelog, branch naming |
+| `web-search` | Haiku | Web search via Tavily/DuckDuckGo/GitHub/npm/PyPI |
+| `docs-fetcher` | Sonnet | Live docs via Context7 MCP, exact versions, API surface |
+| `release-manager` | Haiku | Full release: version bump, changelog, git tag, Docker |
+| `dependency-auditor` | Haiku | Security audit deps (npm/pip/cargo/go), CVE, outdated |
+| `docker-debugger` | Sonnet | Debug Docker/WSL2: health, networking, volumes, perms |
+| `devcontainer-init` | Sonnet | Generate `.devcontainer/devcontainer.json` for project |
+| `bug-hunter` | Sonnet | Structured diagnosis: reproduce → isolate → root cause → fix |
+| `perf-auditor` | Sonnet | Runtime bottlenecks, memory, bundle, SQL, GPU/ML |
+| `api-designer` | Sonnet | REST/tRPC/MCP design: routes, Zod/Pydantic schemas, stubs |
+| `migration-writer` | Haiku | DB migrations (Prisma/Alembic/Diesel/SQL), safe & reversible |
+| `env-auditor` | Haiku | .env / .env.example / devcontainer.json consistency |
+| `context-keeper` | Haiku | Serialize/restore session state in CONTEXT.md |
+| `security-reviewer` | Sonnet | OWASP audit, secrets detection, vulnerability remediation |
+| `refactor-cleaner` | Sonnet | Dead code, AI slop, duplicates, complexity reduction |
+| `tdd-guide` | Sonnet | TDD enforcement, write-tests-first, 80%+ coverage |
 
-### Teams orchestrées (workflows multi-agents)
+### Teams
 
-> ⚠️ Nécessite `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` (déjà configuré dans settings.json)
-
-| Team | Modèle lead | Quand l'invoquer |
+| Team | Lead | When |
 |---|---|---|
-| `research-team` | Sonnet | Avant de choisir une librairie, pattern d'archi, technologie |
-| `feature-dev-team` | Opus | Feature ≥ 3 fichiers, front+back, tests + review simultanés |
-| `debug-team` | Sonnet | Bug résistant > 30min, cross-module, cause inconnue |
-| `release-full-team` | Haiku | Release complète avec gate sécu + tests avant de shipper |
+| `research-team` | Sonnet | Before choosing a library, architecture pattern, technology |
+| `feature-dev-team` | Opus | Feature ≥ 3 files, front+back, tests + review simultaneous |
+| `debug-team` | Sonnet | Bug resistant > 30min, cross-module, unknown cause |
+| `release-full-team` | Haiku | Full release with security gate + tests before shipping |
 
-**Flow research-team :**
-```
-web-search + docs-fetcher + codebase-explorer (parallèle)
-  → synthèse en decision brief opinioné
-```
+### MCP Servers
 
-**Flow feature-dev-team :**
-```
-Phase 1 (parallèle) : codebase-explorer + docs-fetcher
-Phase 2 (séquentiel) : implémentation
-Phase 3 (parallèle) : test-writer + architect review
-```
-
-### MCP servers configurés
-
-| MCP | Clé requise | Usage |
+| MCP | Key Required | Usage |
 |---|---|---|
-| `context7` | — | Docs live des librairies (toujours actif) |
-| `tavily` | `TAVILY_API_KEY` | Web search avec résultats structurés |
+| `context7` | — | Live library docs (always active) |
+| `tavily` | `TAVILY_API_KEY` | Web search with structured results |
 | `github` | `GITHUB_TOKEN` | Repos, PRs, issues, code search |
 
-Les clés API sont passées via `remoteEnv` dans `devcontainer.json` :
-```json
-"remoteEnv": {
-  "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
-  "TAVILY_API_KEY": "${localEnv:TAVILY_API_KEY}",
-  "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
-}
-```
+---
 
-## Contexte entrepreneur solo
+## Workflows
 
-Je développe seul et j'optimise chaque heure. Les priorités sont :
+**New Feature:**
+1. `/user:plan` → spec + breakdown + risks + scope cuts
+2. Engineering validation gate → approve or redesign
+3. `research-team` (if unknown technology)
+4. `feature-dev-team` (if feature ≥ 3 files)
+5. `/user:review` → code review before commit
+6. Quality & Security Audit (section 4 above)
+7. `git-workflow` → conventional commits + PR desc
 
-### Principes de travail
+**Before Release:**
+1. `/user:security-check` → security audit
+2. `dependency-auditor` → CVE + outdated
+3. `/user:test` → verify everything passes
+4. `release-manager` → version bump + changelog + tag
 
-- **Scope cuts first** : avant d'implémenter, identifier ce qu'on peut supprimer ou différer
-- **Timeboxing** : S = <2h, M = 2-4h, L = 1 jour — refuser d'estimer en "semaines" sans découpage
-- **Validate before build** : pour toute feature produit, formuler l'hypothèse testable avant de coder
-- **Debt register** : noter explicitement la dette technique acceptée (pas l'ignorer)
+**Complex Bug:**
+1. `/user:debug` → structured diagnosis
+2. `docs-fetcher` → check official dependency docs
+3. `architect` → review if cause is structural
 
-### Workflows fréquents
+**End of Session:**
+1. `/user:context-save` → save state to CONTEXT.md
 
-**Nouvelle feature :**
-1. `feature-planner` → spec + découpage + risques
-2. `research-team` (si technologie inconnue)
-3. `feature-dev-team` (si feature ≥ 3 fichiers)
-4. `git-workflow` → conventional commits + PR desc
+---
 
-**Avant release :**
-1. `dependency-auditor` → CVE + outdated
-2. `release-manager` → version bump + changelog + tag
+## What I DO NOT Want
 
-**Analyse d'une librairie inconnue :**
-1. `research-team` → decision brief avec recommandation
-
-**Bug complexe :**
-1. `codebase-explorer` → cartographier la zone affectée
-2. `docs-fetcher` → vérifier la doc officielle de la dépendance
-3. `architect` → review si la cause est structurelle
-
-### Règles pour le mode Cowork (Claude Desktop)
-- Outputs documentaires : préférer `.md` pour le contenu léger, `.docx` pour les documents formels
-- Toujours sauvegarder dans le dossier `Documents/` sélectionné
-- Les tâches de recherche business (veille, analyse, rédaction) ne nécessitent pas les agents Claude Code
-
-## Convention CONTEXT.md — Mémoire de session
-
-Chaque projet peut avoir un fichier `CONTEXT.md` à sa racine. Ce fichier est **la mémoire de travail** entre deux sessions Claude Code.
-
-### Quand le lire
-- **Toujours** lire `CONTEXT.md` en premier si il existe au début d'une conversation de travail
-- Il remplace le besoin de ré-expliquer l'état du projet à chaque session
-
-### Quand le mettre à jour
-- Utiliser l'agent `context-keeper` en fin de session : `save context`
-- Ou commande shell directe : `session-handoff.sh --save`
-
-### Ce qu'il contient
-```
-Status | Active work | Progress | Decisions taken
-Known blockers | Accepted tech debt | Next 3 actions | Relevant files | Git state
-```
-
-### Règles
-- `CONTEXT.md` est dans `.gitignore` — c'est un fichier de travail personnel, pas du code partagé
-- Si `CONTEXT.md` contredit le code réel, le code a toujours raison
-- Le section "Next session: first 3 actions" doit être concrète et exécutable
-
-## Ce que je ne veux pas
-
-- Proposer systématiquement Python pour tout ce qui touche au backend
-- Écrire du code, des variables ou des commentaires en français
-- Écrire des textes UI en anglais dans une app à destination française
-- Omettre la documentation Doxygen sur les fonctions publiques
-- Ajouter des dépendances sans justification
-- Créer des fichiers README ou de documentation non demandés
-- Supposer une stack sans avoir analysé le contexte du projet
-- Reformater du code existant sans raison explicite
-- Démarrer une implémentation sans avoir lu le code existant d'abord
+- Python proposed by default for any backend (analyze first)
+- Code, variables, or comments written in French
+- English UI text in a French-targeted app
+- Missing Doxygen documentation on public functions
+- Dependencies added without justification
+- Unsolicited README or documentation files
+- Stack assumed without analyzing project context
+- Existing code reformatted without explicit reason
+- Implementation started without reading existing code first
+- Verbose/obvious comments (AI slop)
+- Over-engineered abstractions where a simple function suffices
+- catch-all error handling that swallows errors silently
+- Console.log/print left in production code
+- Magic numbers without named constants
+- Premature optimization before profiling
+- Code without tests — NEVER deliver code that hasn't been tested
+- Skipping test execution ("I'll run them later")
+- Tests that don't assert anything meaningful
+- Marking a task as done without running the test suite

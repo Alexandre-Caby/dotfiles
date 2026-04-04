@@ -1,9 +1,13 @@
 {
-  "name": "{{PROJECT_NAME}}",
+  "name": "${localEnv:PROJECT_NAME:rust-project}",
   "image": "mcr.microsoft.com/devcontainers/rust:1",
 
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {}
+    "ghcr.io/devcontainers/features/git:1": {},
+    // Node.js requis pour Claude Code (npm) et MCP servers (npx)
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
   },
 
   "customizations": {
@@ -27,6 +31,7 @@
 
   "remoteEnv": {
     "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+    "TAVILY_API_KEY": "${localEnv:TAVILY_API_KEY}",
     "GITHUB_TOKEN": "${localEnv:GITHUB_TOKEN}"
   }
 }

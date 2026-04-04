@@ -4,13 +4,33 @@
   },
 
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "CMD=$(echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; print(json.load(sys.stdin).get('command',''))\" 2>/dev/null) && case \"$CMD\" in *'rm -rf /'*|*'> /dev/sda'*|*'mkfs'*|*':(){:|:&};:'*) echo 'BLOCKED: Destructive command detected' >&2; exit 2 ;; *'chmod -R 777'*|*'chmod 777 /'*) echo 'BLOCKED: Recursive chmod 777 is dangerous' >&2; exit 2 ;; *'cat '*'.env'*|*'head '*'.env'*|*'tail '*'.env'*|*'less '*'.env'*|*'more '*'.env'*|*'cat '*'credentials'*|*'cat '*'secret'*) echo 'BLOCKED: Reading secrets files via shell is not allowed — use environment variables' >&2; exit 2 ;; esac || true"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; print(json.load(sys.stdin).get('file_path',''))\" 2>/dev/null) && case \"$FILE\" in */.env|*/.env.local|*/.env.production|*/.env.staging|*/.env.development) echo 'BLOCKED: Reading .env files is not allowed — use environment variables directly. Read .env.example instead.' >&2; exit 2 ;; */credentials.json|*/secrets.json|*/service-account*.json|*/.gcloud/*|*/.aws/credentials|*/.ssh/id_*) echo 'BLOCKED: Reading credentials/secrets files is not allowed' >&2; exit 2 ;; esac || true"
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
         "hooks": [
           {
             "type": "command",
-            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get('file_path',''))\" 2>/dev/null) && [ -n \"$FILE\" ] && [ -f \"$FILE\" ] && case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.css) command -v npx >/dev/null 2>&1 && npx --yes prettier --write \"$FILE\" 2>/dev/null || true ;; *.py) command -v ruff >/dev/null 2>&1 && ruff format \"$FILE\" 2>/dev/null || command -v black >/dev/null 2>&1 && black -q \"$FILE\" 2>/dev/null || true ;; *.rs) command -v rustfmt >/dev/null 2>&1 && rustfmt \"$FILE\" 2>/dev/null || true ;; *.go) command -v gofmt >/dev/null 2>&1 && gofmt -w \"$FILE\" 2>/dev/null || true ;; esac || true"
+            "command": "FILE=$(echo \"$CLAUDE_TOOL_INPUT\" | python3 -c \"import sys,json; d=json.load(sys.stdin); print(d.get('file_path',''))\" 2>/dev/null) && [ -n \"$FILE\" ] && [ -f \"$FILE\" ] && case \"$FILE\" in *.ts|*.tsx|*.js|*.jsx|*.json|*.css) command -v npx >/dev/null 2>&1 && npx --yes prettier --write \"$FILE\" 2>/dev/null || true ;; *.py) command -v ruff >/dev/null 2>&1 && ruff format \"$FILE\" 2>/dev/null || command -v black >/dev/null 2>&1 && black -q \"$FILE\" 2>/dev/null || true ;; *.rs) command -v rustfmt >/dev/null 2>&1 && rustfmt \"$FILE\" 2>/dev/null || true ;; *.go) command -v gofmt >/dev/null 2>&1 && gofmt -w \"$FILE\" 2>/dev/null || true ;; *.c|*.h|*.cpp|*.hpp) command -v clang-format >/dev/null 2>&1 && clang-format -i \"$FILE\" 2>/dev/null || true ;; esac || true"
           }
         ]
       }
@@ -41,22 +61,89 @@
 
   "permissions": {
     "allow": [
+      "Bash(git:*)",
       "Bash(docker:*)",
       "Bash(docker compose:*)",
-      "Bash(git:*)",
       "Bash(npm:*)",
       "Bash(pnpm:*)",
+      "Bash(npx:*)",
       "Bash(cargo:*)",
       "Bash(uv:*)",
+      "Bash(pip:*)",
+      "Bash(python:*)",
+      "Bash(python3:*)",
+      "Bash(node:*)",
+      "Bash(go:*)",
+      "Bash(make:*)",
+      "Bash(cmake:*)",
       "Bash(ruff:*)",
+      "Bash(black:*)",
       "Bash(rustfmt:*)",
       "Bash(gofmt:*)",
+      "Bash(clang-format:*)",
+      "Bash(prettier:*)",
+      "Bash(eslint:*)",
+      "Bash(pytest:*)",
+      "Bash(vitest:*)",
+      "Bash(jest:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(sort:*)",
+      "Bash(echo:*)",
+      "Bash(mkdir:*)",
+      "Bash(cp:*)",
+      "Bash(mv:*)",
+      "Bash(touch:*)",
+      "Bash(which:*)",
+      "Bash(whoami:*)",
+      "Bash(env:*)",
+      "Bash(printenv:*)",
       "Bash(curl:*)",
-      "Bash(npx:*)"
+      "Bash(wget:*)",
+      "Bash(gh:*)",
+      "Bash(claude:*)",
+      "Bash(tree:*)",
+      "Bash(du:*)",
+      "Bash(df:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(tar:*)",
+      "Bash(unzip:*)",
+      "Bash(openocd:*)",
+      "Bash(st-flash:*)",
+      "Bash(arm-none-eabi-gcc:*)",
+      "Bash(arm-none-eabi-gdb:*)",
+      "Bash(knip:*)",
+      "Bash(depcheck:*)",
+      "Bash(ts-prune:*)",
+      "Read",
+      "Write",
+      "Edit",
+      "Grep",
+      "Glob",
+      "mcp__context7:*",
+      "mcp__tavily:*",
+      "mcp__github:*"
     ],
     "deny": [
       "Bash(rm -rf /*)",
-      "Bash(chmod 777:*)"
+      "Bash(rm -rf /)",
+      "Bash(chmod -R 777:*)",
+      "Bash(chmod 777 /*)",
+      "Bash(> /dev/sda*)",
+      "Bash(mkfs:*)",
+      "Bash(dd if=*of=/dev/*)",
+      "Bash(git push --force origin main)",
+      "Bash(git push --force origin master)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean -fd:*)",
+      "Bash(:(){ :|:& };:*)"
     ]
   }
 }

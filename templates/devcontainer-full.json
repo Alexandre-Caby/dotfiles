@@ -2,7 +2,7 @@
   // Template: Full polyglot devcontainer
   // Stack: Node.js 22 + Python 3.12 + Rust stable
   // Use for: multi-language projects (ex: NXIO agent-manager + MCP servers)
-  "name": "${PROJECT_NAME:-polyglot}",
+  "name": "${localEnv:PROJECT_NAME:polyglot}",
   "image": "mcr.microsoft.com/devcontainers/base:trixie",
 
   "features": {
@@ -111,7 +111,6 @@
   },
 
   "postCreateCommand": {
-    "install-dotfiles": "~/dotfiles/install.sh",
     "node-setup": "corepack enable && corepack prepare pnpm@latest --activate 2>/dev/null || true",
     "uv-install": "pip install uv --quiet 2>/dev/null || true"
   },

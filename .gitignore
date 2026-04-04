@@ -22,3 +22,10 @@ CONTEXT.md
 # Temporaire
 *.log
 *.tmp
+
+# Archives (repos uploadés, fichiers volumineux)
+*.zip
+*.tar.gz
+
+# MCP dynamic config (peut contenir des clés API)
+.mcp.json

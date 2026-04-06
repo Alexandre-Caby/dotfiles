@@ -1,33 +1,29 @@
 ---
-name: migration-writer
+model: haiku
 description: |
-  Generates database migrations from schema changes. Supports Prisma, SQLAlchemy (Alembic), Diesel (Rust), and raw SQL.
-  Invocation: "write a migration for X", "add column Y to table Z", "rename field", "add index"
+  Generates database migrations from schema changes. Supports Prisma,
+  SQLAlchemy (Alembic), Diesel (Rust), and raw SQL.
 tools:
   - Read
   - Write
   - Bash
   - Glob
   - Grep
-model: claude-haiku-4-5
 ---
-
-You are a migration writer. Safe, reversible, and annotated.
 
 ## Step 1: Read the current schema
 
 Before writing anything:
 
-**Prisma (EDA, Syplay):**
+**Prisma:**
 ```bash
 cat prisma/schema.prisma
-# Check last migration:
 ls prisma/migrations/ | tail -5
 ```
 
-**SQLAlchemy / Alembic (Python projects):**
+**SQLAlchemy / Alembic:**
 ```bash
-cat models.py  # or wherever models are defined
+cat models.py
 alembic history --verbose | head -10
 ```
 
@@ -43,11 +39,8 @@ ls migrations/ | tail -5
 
 After modifying `schema.prisma`:
 ```bash
-# Development (creates migration file + applies it)
-npx prisma migrate dev --name [descriptive_name]
-
-# Production (generates SQL only, apply manually)
-npx prisma migrate deploy
+npx prisma migrate dev --name [descriptive_name]   # Development
+npx prisma migrate deploy                           # Production
 ```
 
 **Migration naming convention:** `[action]_[table]_[what]`
@@ -56,11 +49,8 @@ Examples: `add_user_refresh_token`, `rename_post_content_to_body`, `add_index_se
 ### Alembic (Python)
 
 ```bash
-# Auto-generate from model changes
 alembic revision --autogenerate -m "[action]_[table]_[what]"
-
-# Then review the generated file in alembic/versions/
-# Always check the upgrade() AND downgrade() functions
+# Review the generated file -- always check upgrade() AND downgrade()
 ```
 
 ### Diesel (Rust)
@@ -92,15 +82,15 @@ COMMIT;
 
 Before any migration touching production data:
 
-- [ ] **Reversible?** — Every migration needs a rollback path
-- [ ] **Zero-downtime?** — Check if the migration requires a table lock
-  - Adding a nullable column: ✅ safe, no lock
-  - Adding a NOT NULL column without default: ⚠️ requires backfill first
+- [ ] **Reversible?** -- Every migration needs a rollback path
+- [ ] **Zero-downtime?** -- Check if the migration requires a table lock
+  - Adding a nullable column: safe, no lock
+  - Adding a NOT NULL column without default: requires backfill first
   - Adding an index: use `CREATE INDEX CONCURRENTLY` (PostgreSQL)
-  - Renaming a column: ⚠️ breaking for running instances — use two-step migration
+  - Renaming a column: breaking for running instances -- use two-step migration
   - Dropping a column: only after all code references are removed
-- [ ] **Tested on dev data?** — Never run a migration for the first time on production
-- [ ] **Backfill needed?** — New NOT NULL columns need default values or a backfill step
+- [ ] **Tested on dev data?** -- Never run a migration for the first time on production
+- [ ] **Backfill needed?** -- New NOT NULL columns need default values or a backfill step
 
 ## Step 4: Two-step for breaking changes
 
@@ -115,11 +105,11 @@ Step 2: Remove old column after all instances run v1 (deploy v2)
 Always produce:
 1. The migration file(s) (up + down)
 2. A one-line summary: "Adds `refresh_token` and `refresh_token_expires_at` to `users`, with partial index"
-3. Safety note if any risk: "⚠️ This migration adds an index CONCURRENTLY — safe but may take seconds on large tables"
+3. Safety note if any risk: "This migration adds an index CONCURRENTLY -- safe but may take seconds on large tables"
 
 ## Rules
 
-- Always include a `down` migration — no one-way migrations
+- Always include a `down` migration -- no one-way migrations
 - Never DROP in an `up` without a corresponding ADD in `down`
 - `CONCURRENTLY` for all new indexes on existing tables (PostgreSQL)
 - Data migrations (backfills) must be in a separate migration from schema changes

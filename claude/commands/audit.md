@@ -1,25 +1,25 @@
-# Audit — Audit complet qualité + sécurité + propreté
+# Audit — Full quality + security + cleanliness audit
 
-Lance un audit exhaustif du projet en 4 phases. Combine review, security, et cleanup en un seul pass.
+Runs an exhaustive project audit in 4 phases. Combines review, security, and cleanup in a single pass.
 
-## Paramètre
+## Parameter
 
-$ARGUMENTS = scope optionnel (ex: "src/", "depuis le dernier commit", "tout")
+$ARGUMENTS = optional scope (e.g., "src/", "since last commit", "all")
 
-Si vide, auditer les changements depuis le dernier commit. Si "tout", auditer tout le projet.
+If empty, audit changes since the last commit. If "all", audit the entire project.
 
-## Phase 1 — Scan automatisé
+## Phase 1 — Automated scan
 
-Exécuter en parallèle :
+Run in parallel:
 
 ```bash
-# Secrets exposés
+# Exposed secrets
 grep -rn "password\|secret\|api_key\|token\|private_key\|BEGIN RSA\|BEGIN OPENSSH" \
   --include="*.ts" --include="*.py" --include="*.rs" --include="*.go" \
   --include="*.c" --include="*.cpp" --include="*.h" . \
   | grep -v node_modules | grep -v .git | grep -v test | grep -v "\.example"
 
-# Dépendances vulnérables
+# Vulnerable dependencies
 npm audit --audit-level=moderate 2>/dev/null; \
 pip audit 2>/dev/null; \
 cargo audit 2>/dev/null; \
@@ -30,7 +30,7 @@ npx knip --no-progress 2>/dev/null || \
 python3 -m vulture . 2>/dev/null || \
 true
 
-# TODO/FIXME/HACK oubliés
+# Forgotten TODO/FIXME/HACK
 grep -rn "TODO\|FIXME\|HACK\|XXX\|TEMP\|WORKAROUND" \
   --include="*.ts" --include="*.py" --include="*.rs" --include="*.go" \
   --include="*.c" --include="*.cpp" . \
@@ -39,94 +39,94 @@ grep -rn "TODO\|FIXME\|HACK\|XXX\|TEMP\|WORKAROUND" \
 
 ## Phase 2 — Code quality review
 
-Pour chaque fichier dans le scope :
+For each file in scope:
 
 ### Correctness
-- Logique métier correcte ?
-- Edge cases gérés (null, empty, overflow, concurrence) ?
-- Erreurs propagées correctement (pas de catch vide) ?
-- Types corrects (pas de `any` en TS, pas de `# type: ignore` en Python) ?
+- Is business logic correct?
+- Are edge cases handled (null, empty, overflow, concurrency)?
+- Are errors propagated correctly (no empty catch)?
+- Are types correct (no `any` in TS, no `# type: ignore` in Python)?
 
 ### Performance
-- Requêtes N+1 ?
-- Calculs inutilement répétés dans des boucles ?
-- Mémoire : leaks, objets volumineux non libérés ?
-- Complexité algorithmique excessive ?
+- N+1 queries?
+- Unnecessarily repeated computations in loops?
+- Memory: leaks, large objects not freed?
+- Excessive algorithmic complexity?
 
 ### Maintainability
-- Nommage clair (pas de `data`, `temp`, `stuff`, `x`) ?
-- Fonctions < 50 lignes, une seule responsabilité ?
-- Documentation Doxygen sur les fonctions publiques ?
-- DRY respecté (pas de copier-coller) ?
+- Clear naming (no `data`, `temp`, `stuff`, `x`)?
+- Functions < 50 lines, single responsibility?
+- Doxygen documentation on public functions?
+- DRY respected (no copy-paste)?
 
 ### Tests
-- Couverture : chaque fonction publique a un test ?
-- Tests pertinents (pas juste "ça ne plante pas") ?
-- Edge cases testés ?
-- Mocks minimaux (pas de mock qui renvoie toujours true) ?
+- Coverage: does every public function have a test?
+- Are tests meaningful (not just "it doesn't crash")?
+- Are edge cases tested?
+- Minimal mocks (no mocks that always return true)?
 
 ## Phase 3 — Security (OWASP WSTG + ANSSI)
 
-Appliquer le même référentiel que `/user:security-check` :
+Apply the same framework as `/user:security-check`:
 - CONFIG, AUTHN, AUTHZ, SESS, INPVAL, CRYPT, BUSLOGIC
-- Pattern review (17 patterns critiques)
-- Scoring CVSS v3.1 par vulnérabilité
+- Pattern review (17 critical patterns)
+- CVSS v3.1 scoring per vulnerability
 
 ## Phase 4 — AI slop & clean code
 
-Détecter les signes de code généré sans relecture :
+Detect signs of generated code without review:
 
 ### AI Slop checklist
-- [ ] Commentaires qui paraphrasent le code (`// increment i by 1`)
-- [ ] Over-abstraction (3 fichiers pour un helper de 5 lignes)
-- [ ] Filler words dans les docstrings ("This function basically...")
-- [ ] Console.log / print de debug oubliés
-- [ ] Code mort (fonctions jamais appelées, imports inutilisés)
-- [ ] Variables déclarées mais jamais utilisées
-- [ ] Try-catch avec catch vide ou `// TODO: handle error`
-- [ ] Types `any` / `object` / `dict` sans raison documentée
-- [ ] Dépendances importées mais non utilisées dans package.json/Cargo.toml
-- [ ] README.md avec du contenu template non personnalisé
+- [ ] Comments that paraphrase the code (`// increment i by 1`)
+- [ ] Over-abstraction (3 files for a 5-line helper)
+- [ ] Filler words in docstrings ("This function basically...")
+- [ ] Forgotten console.log / debug prints
+- [ ] Dead code (never-called functions, unused imports)
+- [ ] Variables declared but never used
+- [ ] Try-catch with empty catch or `// TODO: handle error`
+- [ ] `any` / `object` / `dict` types without documented reason
+- [ ] Dependencies imported but unused in package.json/Cargo.toml
+- [ ] README.md with unpersonalized template content
 
 ### Simplification
-- Code qui peut être réduit (map/filter vs boucle manuelle) ?
-- Abstractions inutiles (interface avec une seule implémentation) ?
-- Fichiers de config dupliqués ?
+- Code that can be reduced (map/filter vs manual loop)?
+- Unnecessary abstractions (interface with a single implementation)?
+- Duplicated config files?
 
-## Format de sortie
+## Output format
 
 ```
-# 🔍 Audit complet — [date]
+# 🔍 Full audit — [date]
 
-## Scope : [description]
-## Durée : [temps]
+## Scope: [description]
+## Duration: [time]
 
-## Résumé exécutif
-- Score qualité : [X/10]
-- Score sécurité : [X/10]
-- Score propreté : [X/10]
-- **Score global : [X/10]**
+## Executive summary
+- Quality score: [X/10]
+- Security score: [X/10]
+- Cleanliness score: [X/10]
+- **Overall score: [X/10]**
 
-## 🔴 Bloquants (à corriger avant merge)
-1. [SEC] [fichier:ligne] Description — CVSS X.X
-2. [BUG] [fichier:ligne] Description
-3. [TEST] Pas de tests pour [module]
+## 🔴 Blockers (must fix before merge)
+1. [SEC] [file:line] Description — CVSS X.X
+2. [BUG] [file:line] Description
+3. [TEST] No tests for [module]
 
-## 🟠 Importants (à corriger rapidement)
-1. [PERF] [fichier:ligne] Description
-2. [SLOP] [fichier:ligne] Description
+## 🟠 Important (fix soon)
+1. [PERF] [file:line] Description
+2. [SLOP] [file:line] Description
 
-## 🟡 Améliorations (prochaine itération)
+## 🟡 Improvements (next iteration)
 1. [CLEAN] Description
 2. [DOC] Description
 
-## 🟢 Points positifs
-- [ce qui est bien fait]
+## 🟢 Positive points
+- [what is well done]
 
-## Métriques
-- Fichiers analysés : X
-- Vulnérabilités : X critique / X haute / X moyenne
-- Dead code détecté : X fonctions / X imports
-- AI slop détecté : X occurrences
-- Couverture tests estimée : X%
+## Metrics
+- Files analyzed: X
+- Vulnerabilities: X critical / X high / X medium
+- Dead code detected: X functions / X imports
+- AI slop detected: X occurrences
+- Estimated test coverage: X%
 ```

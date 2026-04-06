@@ -10,19 +10,19 @@ dotfiles/
 ├── claude/
 │   ├── CLAUDE.md                 ← Global rules, standards, workflows
 │   ├── settings.json             ← Hooks, permissions, environment
-│   ├── agents/                   ← 18 specialized agents
+│   ├── agents/                   ← 22 specialized agents
 │   │   ├── architect.md          ← Architecture review (Opus)
 │   │   ├── bug-hunter.md         ← Structured diagnosis (Sonnet)
 │   │   ├── codebase-explorer.md  ← Codebase mapping (Sonnet)
 │   │   ├── feature-planner.md    ← Feature spec + breakdown (Opus)
 │   │   ├── test-writer.md        ← Test generation (Sonnet)
-│   │   ├── ...                   ← 13 more agents
+│   │   ├── ...                   ← 17 more agents
 │   │   └── teams/                ← 4 orchestrated multi-agent teams
 │   │       ├── research.md
 │   │       ├── feature-dev.md
 │   │       ├── debug-team.md
 │   │       └── release-full-team.md
-│   ├── commands/                 ← 6 slash commands
+│   ├── commands/                 ← 12 slash commands
 │   │   ├── plan.md               ← /user:plan — Implementation planning
 │   │   ├── review.md             ← /user:review — Code review
 │   │   ├── test.md               ← /user:test — Run & diagnose tests

@@ -1,16 +1,16 @@
 {
-  // Template: Base léger — OS + Node.js (pour Claude Code)
-  // Stack: Debian Trixie minimal, ajouter ce dont tu as besoin via features
-  // Use for: projets custom, Go, multi-stack léger, prototypage
+  // Template: Lightweight base — OS + Node.js (for Claude Code)
+  // Stack: Minimal Debian Trixie, add what you need via features
+  // Use for: custom projects, Go, lightweight multi-stack, prototyping
   "name": "${localEnv:PROJECT_NAME:project}",
   "image": "mcr.microsoft.com/devcontainers/base:trixie",
 
   "features": {
-    // Node.js — requis pour Claude Code (npm) et MCP servers (npx)
+    // Node.js — required for Claude Code (npm) and MCP servers (npx)
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22"
     }
-    // Décommenter selon le besoin :
+    // Uncomment as needed:
     // "ghcr.io/devcontainers/features/go:1": { "version": "1.22" },
     // "ghcr.io/devcontainers/features/python:1": { "version": "3.12" },
     // "ghcr.io/devcontainers/features/rust:1": { "version": "stable" },

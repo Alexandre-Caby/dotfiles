@@ -1,16 +1,16 @@
-# Doc — Génération automatique de documentation projet
+# Doc — Automatic project documentation generation
 
-Analyse le codebase et génère/met à jour la documentation.
+Analyzes the codebase and generates/updates documentation.
 
-## Paramètre
+## Parameter
 
-$ARGUMENTS = type de doc (ex: "readme", "api", "architecture", "tout")
+$ARGUMENTS = doc type (e.g., "readme", "api", "architecture", "all")
 
-Si vide, détecter ce qui manque et tout générer.
+If empty, detect what is missing and generate everything.
 
-## Étapes
+## Steps
 
-### 1. Analyse du projet
+### 1. Project analysis
 
 ```bash
 # Structure
@@ -28,112 +28,112 @@ ls -la README.md docs/ CHANGELOG.md ARCHITECTURE.md 2>/dev/null
 
 ### 2. README.md
 
-Si absent ou template non personnalisé, générer :
+If absent or unpersonalized template, generate:
 
 ```markdown
-# [Nom du projet]
+# [Project name]
 
-[Description en 1-2 phrases]
+[Description in 1-2 sentences]
 
 ## Quick Start
 
-### Prérequis
-- [langage] [version]
-- [outils nécessaires]
+### Prerequisites
+- [language] [version]
+- [required tools]
 
 ### Installation
 \`\`\`bash
-[commandes d'installation]
+[installation commands]
 \`\`\`
 
-### Lancement
+### Running
 \`\`\`bash
-[commandes de lancement]
+[launch commands]
 \`\`\`
 
-## Structure du projet
+## Project structure
 
 \`\`\`
-[arborescence pertinente — pas tout, juste les dossiers importants]
+[relevant tree — not everything, just important directories]
 \`\`\`
 
 ## Tests
 
 \`\`\`bash
-[commande pour lancer les tests]
+[command to run tests]
 \`\`\`
 
-## Licence
-[licence détectée ou à définir]
+## License
+[detected license or to be defined]
 ```
 
 ### 3. ARCHITECTURE.md
 
-Si le projet a > 10 fichiers source, générer :
+If the project has > 10 source files, generate:
 
 ```markdown
 # Architecture
 
-## Vue d'ensemble
-[Diagramme ASCII ou description de l'architecture]
+## Overview
+[ASCII diagram or architecture description]
 
 ## Modules
 ### [module-1]
-- Responsabilité : [quoi]
-- Dépendances : [de quoi il dépend]
-- Expositions : [API publique]
+- Responsibility: [what]
+- Dependencies: [what it depends on]
+- Exports: [public API]
 
-## Flux de données
-[Description du flux principal]
+## Data flow
+[Description of the main flow]
 
-## Décisions techniques
-- [Pourquoi ce framework]
-- [Pourquoi cette structure]
+## Technical decisions
+- [Why this framework]
+- [Why this structure]
 ```
 
 ### 4. API Documentation
 
-Si c'est une API (routes/endpoints détectés) :
+If it's an API (routes/endpoints detected):
 
 ```bash
-# Détecter les routes
+# Detect routes
 grep -rn "app\.\(get\|post\|put\|delete\|patch\)\|@app\.route\|@router\.\|#\[.*route\]" \
   --include="*.ts" --include="*.py" --include="*.rs" . \
   | grep -v node_modules | grep -v test
 ```
 
-Générer la doc par endpoint : méthode, path, params, body, response, erreurs.
+Generate docs per endpoint: method, path, params, body, response, errors.
 
-### 5. Doxygen manquant
+### 5. Missing Doxygen
 
-Scanner les fonctions publiques sans documentation :
+Scan public functions without documentation:
 
 ```bash
-# TS/JS — fonctions/méthodes exportées sans JSDoc
+# TS/JS — exported functions/methods without JSDoc
 grep -rn "^export\s\+\(function\|const\|class\)" --include="*.ts" . | grep -v node_modules
 
-# Python — fonctions/classes sans docstring
+# Python — functions/classes without docstring
 grep -rn "^\s*def \|^\s*class " --include="*.py" . | grep -v __pycache__ | grep -v test
 
-# Rust — pub fn/struct sans /// doc
+# Rust — pub fn/struct without /// doc
 grep -rn "pub\s\+fn\|pub\s\+struct\|pub\s\+enum" --include="*.rs" .
 ```
 
-Pour chaque fonction publique sans doc, ajouter la documentation Doxygen dans le style approprié au langage.
+For each public function without docs, add Doxygen documentation in the appropriate language style.
 
-## Format de sortie
+## Output format
 
 ```
 ## 📚 Documentation — [date]
 
-### Fichiers générés/mis à jour
-- README.md [créé/mis à jour]
-- ARCHITECTURE.md [créé/mis à jour]
-- docs/api.md [créé/mis à jour]
+### Files generated/updated
+- README.md [created/updated]
+- ARCHITECTURE.md [created/updated]
+- docs/api.md [created/updated]
 
-### Doxygen ajouté
-- [X] fonctions documentées sur [Y] fonctions publiques
+### Doxygen added
+- [X] functions documented out of [Y] public functions
 
-### Manquant (action requise)
-- [Ce que je ne peux pas deviner — description métier, choix de licence, etc.]
+### Missing (action required)
+- [What I cannot guess — business description, license choice, etc.]
 ```

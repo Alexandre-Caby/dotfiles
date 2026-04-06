@@ -1,34 +1,34 @@
-# Test — Lancer et analyser les tests
+# Test — Run and analyze tests
 
-Exécute la suite de tests du projet et analyse les résultats.
+Runs the project test suite and analyzes the results.
 
-## Détection automatique du runner
+## Automatic runner detection
 
-1. Vérifier la présence des fichiers de config et exécuter :
-   - `package.json` avec script test → `npm test` ou `pnpm test`
-   - `vitest.config.*` → `npx vitest run`
-   - `jest.config.*` → `npx jest`
-   - `pytest.ini` / `pyproject.toml` [tool.pytest] → `pytest -v`
-   - `Cargo.toml` → `cargo test`
-   - `go.mod` → `go test ./...`
+1. Check for config files and run:
+   - `package.json` with test script -> `npm test` or `pnpm test`
+   - `vitest.config.*` -> `npx vitest run`
+   - `jest.config.*` -> `npx jest`
+   - `pytest.ini` / `pyproject.toml` [tool.pytest] -> `pytest -v`
+   - `Cargo.toml` -> `cargo test`
+   - `go.mod` -> `go test ./...`
 
-2. Si plusieurs runners possibles, demander à l'utilisateur
+2. If multiple runners possible, ask the user
 
-## Analyse des résultats
+## Result analysis
 
-Pour chaque test qui échoue :
+For each failing test:
 
 ```
-### ❌ [nom du test]
-**Fichier** : [path:line]
-**Erreur** : [message d'erreur concis]
-**Cause probable** : [diagnostic]
-**Fix suggéré** : [correction proposée]
+### ❌ [test name]
+**File**: [path:line]
+**Error**: [concise error message]
+**Probable cause**: [diagnosis]
+**Suggested fix**: [proposed correction]
 ```
 
-## Résumé final
+## Final summary
 
 ```
 ✅ [X] passed | ❌ [Y] failed | ⏭ [Z] skipped
-Coverage : [X]% (si disponible)
+Coverage: [X]% (if available)
 ```

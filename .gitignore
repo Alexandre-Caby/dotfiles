@@ -1,4 +1,4 @@
-# Secrets — jamais commités
+# Secrets — never committed
 .env
 .env.*
 !.env.example
@@ -11,21 +11,34 @@ secrets/
 Thumbs.db
 desktop.ini
 
-# Editeurs
+# Editors
 .vscode/settings.json
 *.swp
 *~
 
-# Session context (fichiers de travail personnels — ne pas partager)
+# Session context (personal working files — do not share)
 CONTEXT.md
 
-# Temporaire
+# Temporary
 *.log
 *.tmp
 
-# Archives (repos uploadés, fichiers volumineux)
+# Archives (uploaded repos, large files)
 *.zip
 *.tar.gz
 
-# MCP dynamic config (peut contenir des clés API)
+# MCP dynamic config (may contain API keys)
 .mcp.json
+
+# Claude Code runtime artifacts (generated, never committed)
+claude/.credentials.json
+claude/backups/
+claude/cache/
+claude/debug/
+claude/history.jsonl
+claude/plugins/
+claude/projects/
+claude/shell-snapshots/
+claude/todos/
+claude/plans/
+claude/claude

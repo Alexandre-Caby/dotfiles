@@ -1,81 +1,81 @@
 ---
 name: docker-wsl
-description: Patterns et commandes Docker/WSL2 fréquents. Référence pour les tâches récurrentes de gestion de conteneurs dans cet environnement.
+description: Common Docker/WSL2 patterns and commands. Reference for recurring container management tasks in this environment.
 ---
 
-# Docker + WSL2 — Patterns et commandes
+# Docker + WSL2 — Patterns and Commands
 
-## Règles de base WSL2/Docker
+## WSL2/Docker Ground Rules
 
-- Toujours utiliser des **chemins Linux** dans les configs WSL (`/home/user/...`)
-- Les fichiers Windows sont accessibles dans WSL via `/mnt/c/Users/...` mais **éviter** de monter depuis là (perf médiocre)
-- Stocker les projets dans le filesystem WSL (`~/projects/`) pour de meilleures perfs I/O
-- `host.docker.internal` → accès à l'hôte Windows/WSL depuis un conteneur
+- Always use **Linux paths** in WSL configs (`/home/user/...`)
+- Windows files are accessible in WSL via `/mnt/c/Users/...` but **avoid** mounting from there (poor performance)
+- Store projects in the WSL filesystem (`~/projects/`) for better I/O performance
+- `host.docker.internal` -> access the Windows/WSL host from a container
 
-## Commandes essentielles
+## Essential Commands
 
-### Gestion des conteneurs
+### Container Management
 ```bash
-docker compose up -d                  # Démarrer en background
-docker compose up -d --build          # Rebuild + démarrer
-docker compose down                   # Arrêter et supprimer les conteneurs
-docker compose down -v                # Idem + supprimer les volumes
-docker compose restart <service>      # Redémarrer un service
-docker compose exec <service> sh      # Shell dans un service
-docker compose logs -f <service>      # Logs en temps réel
-docker compose ps                     # État des services
+docker compose up -d                  # Start in background
+docker compose up -d --build          # Rebuild + start
+docker compose down                   # Stop and remove containers
+docker compose down -v                # Same + remove volumes
+docker compose restart <service>      # Restart a service
+docker compose exec <service> sh      # Shell into a service
+docker compose logs -f <service>      # Real-time logs
+docker compose ps                     # Service status
 ```
 
-### Nettoyage
+### Cleanup
 ```bash
-docker system prune                   # Supprimer les ressources inutilisées
-docker system prune -a                # Tout supprimer (images non utilisées aussi)
-docker volume prune                   # Supprimer les volumes orphelins
-docker image prune                    # Supprimer les images dangling
+docker system prune                   # Remove unused resources
+docker system prune -a                # Remove everything (unused images too)
+docker volume prune                   # Remove orphaned volumes
+docker image prune                    # Remove dangling images
 ```
 
 ### Debug
 ```bash
-docker inspect <container>            # Config complète JSON
-docker stats                          # Utilisation CPU/RAM en temps réel
-docker exec -it <container> sh        # Shell interactif
-docker cp <container>:/chemin ./local # Copier un fichier depuis un conteneur
+docker inspect <container>            # Full JSON config
+docker stats                          # Real-time CPU/RAM usage
+docker exec -it <container> sh        # Interactive shell
+docker cp <container>:/path ./local   # Copy a file from a container
 ```
 
-## Réseau Docker — Architecture Project-Nero
+## Docker Networking — Project-Nero Architecture
 
 ```bash
-# Créer le réseau partagé (une seule fois)
+# Create the shared network (one-time)
 docker network create ai_network
 
-# Vérifier les conteneurs connectés
+# Check connected containers
 docker network inspect ai_network
 
-# Connecter un conteneur existant au réseau
+# Connect an existing container to the network
 docker network connect ai_network <container>
 ```
 
-**Ordre de démarrage Project-Nero :**
-1. `AI_lab/` → Ollama + environnements (réseau créé ici)
-2. `AI_tools/` → MCP servers Unreal + Blender + Everness + Bridge
+**Project-Nero startup order:**
+1. `AI_lab/` -> Ollama + environments (network created here)
+2. `AI_tools/` -> MCP servers Unreal + Blender + Everness + Bridge
 
-## Volumes — Bonnes pratiques
+## Volumes — Best Practices
 
 ```yaml
-# ✅ Volume nommé (persistent, géré par Docker)
+# Named volume (persistent, managed by Docker)
 volumes:
   - pgdata:/var/lib/postgresql/data
 
-# ✅ Bind mount depuis WSL (développement)
+# Bind mount from WSL (development)
 volumes:
   - ./src:/app/src
 
-# ❌ Bind mount depuis Windows (lent)
+# Bind mount from Windows (slow)
 volumes:
-  - /mnt/c/Users/Alexandre/...:/app  # Éviter
+  - /mnt/c/Users/Alexandre/...:/app  # Avoid
 ```
 
-## Multi-stage builds (pattern recommandé)
+## Multi-stage Builds (recommended pattern)
 
 ```dockerfile
 # TypeScript — multi-stage
@@ -103,21 +103,21 @@ COPY --from=builder /app/target/release/mybinary /usr/local/bin/
 CMD ["mybinary"]
 ```
 
-## Variables d'environnement — Sécurité
+## Environment Variables — Security
 
 ```bash
-# .env (jamais commité, dans .gitignore)
+# .env (never committed, in .gitignore)
 POSTGRES_PASSWORD=secret
 JWT_SECRET=secret
 ANTHROPIC_API_KEY=sk-...
 
-# docker-compose.yml — référencer sans valeur par défaut
+# docker-compose.yml — reference without default value
 environment:
-  - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  # Obligatoire
-  - LOG_LEVEL=${LOG_LEVEL:-info}            # Avec défaut
+  - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}  # Required
+  - LOG_LEVEL=${LOG_LEVEL:-info}            # With default
 ```
 
-## Healthchecks — Toujours sur les services critiques
+## Healthchecks — Always on Critical Services
 
 ```yaml
 healthcheck:
@@ -128,7 +128,7 @@ healthcheck:
   start_period: 30s
 ```
 
-## GPU (pour Project-Nero — TinyML/Unsloth)
+## GPU (for Project-Nero — TinyML/Unsloth)
 
 ```yaml
 deploy:
@@ -140,7 +140,7 @@ deploy:
           capabilities: [gpu]
 ```
 
-Vérifier NVIDIA Container Toolkit installé :
+Verify NVIDIA Container Toolkit is installed:
 ```bash
 docker run --rm --gpus all nvidia/cuda:12.0-base nvidia-smi
 ```

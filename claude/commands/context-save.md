@@ -1,55 +1,55 @@
-# Context Save — Sauvegarder l'état de session
+# Context Save — Save session state
 
-Génère ou met à jour le fichier `CONTEXT.md` à la racine du projet avec l'état actuel de la session.
+Generates or updates the `CONTEXT.md` file at the project root with the current session state.
 
-## Étapes
+## Steps
 
-1. Lire le `CONTEXT.md` existant s'il y en a un
-2. Exécuter `git status` et `git log --oneline -10` pour connaître l'état git
-3. Synthétiser la session courante
+1. Read the existing `CONTEXT.md` if there is one
+2. Run `git status` and `git log --oneline -10` to get the git state
+3. Synthesize the current session
 
-## Format du CONTEXT.md
+## CONTEXT.md format
 
 ```markdown
-# Context — [nom du projet]
-> Dernière mise à jour : [date ISO]
+# Context — [project name]
+> Last updated: [ISO date]
 
 ## Status
-[En cours / Bloqué / Prêt pour review / ...]
+[In progress / Blocked / Ready for review / ...]
 
-## Travail actif
-[Ce sur quoi on travaille actuellement — 1-3 phrases max]
+## Active work
+[What is currently being worked on — 1-3 sentences max]
 
-## Progression
-- [x] Ce qui est fait
-- [ ] Ce qui reste
+## Progress
+- [x] What is done
+- [ ] What remains
 
-## Décisions prises
-- [Décision] — [Justification courte]
+## Decisions made
+- [Decision] — [Short justification]
 
-## Blockers connus
+## Known blockers
 - [Blocker] — [Impact]
 
-## Dette technique acceptée
-- [Shortcut pris] — [Quand le corriger]
+## Accepted technical debt
+- [Shortcut taken] — [When to fix it]
 
-## Fichiers clés modifiés
-- `path/to/file` — [ce qui a changé]
+## Key files modified
+- `path/to/file` — [what changed]
 
-## État git
-- Branche : [nom]
-- Dernier commit : [hash court] [message]
-- Fichiers non commités : [liste ou "aucun"]
+## Git state
+- Branch: [name]
+- Last commit: [short hash] [message]
+- Uncommitted files: [list or "none"]
 
-## Prochaine session : 3 premières actions
-1. [Action concrète et exécutable]
-2. [Action concrète]
-3. [Action concrète]
+## Next session: first 3 actions
+1. [Concrete, executable action]
+2. [Concrete action]
+3. [Concrete action]
 ```
 
-## Règles
+## Rules
 
-- Être concis — chaque section doit tenir en quelques lignes
-- "Prochaine session" doit être exécutable immédiatement, pas vague
-- Si CONTEXT.md contredit le code, le code a raison
-- Ne pas inclure de code dans CONTEXT.md, seulement des références aux fichiers
+- Be concise — each section should fit in a few lines
+- "Next session" must be immediately executable, not vague
+- If CONTEXT.md contradicts the code, the code is right
+- Do not include code in CONTEXT.md, only references to files

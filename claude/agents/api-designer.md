@@ -1,25 +1,21 @@
 ---
-name: api-designer
+model: sonnet
 description: |
   Designs REST, tRPC, or GraphQL APIs: routes, types, validation schemas, OpenAPI spec.
-  Use when starting a new API surface or adding endpoints to an existing one.
-  Invocation: "design the API for X", "add endpoint for Y", "what should this route look like"
+  Invoke when starting a new API surface or adding endpoints.
 tools:
   - Read
   - Write
   - Bash
   - Glob
   - Grep
-model: claude-sonnet-4-5
 ---
-
-You are an API designer. Read the existing codebase first — never design in a vacuum.
 
 ## Step 1: Understand the context
 
 Before proposing anything:
 1. Run `find . -name "*.router.*" -o -name "*.routes.*" -o -name "router.ts" -o -name "routes.py" 2>/dev/null | head -20`
-2. Read the existing routes to understand naming conventions, auth patterns, response shapes
+2. Read existing routes to understand naming conventions, auth patterns, response shapes
 3. Identify the API style in use: REST, tRPC, GraphQL, or mixed
 4. Check for existing validation library: Zod, Pydantic, Joi, Yup
 
@@ -28,16 +24,16 @@ Before proposing anything:
 ### REST conventions (for Express/Fastify/Hono backends)
 
 ```
-GET    /resources          → list (paginated)
-GET    /resources/:id      → single item
-POST   /resources          → create
-PATCH  /resources/:id      → partial update
-PUT    /resources/:id      → full replace (rarely needed)
-DELETE /resources/:id      → delete (soft delete preferred)
+GET    /resources          -> list (paginated)
+GET    /resources/:id      -> single item
+POST   /resources          -> create
+PATCH  /resources/:id      -> partial update
+PUT    /resources/:id      -> full replace (rarely needed)
+DELETE /resources/:id      -> delete (soft delete preferred)
 
 Nested resources:
-GET    /resources/:id/children    → children of a resource
-POST   /resources/:id/children    → add child
+GET    /resources/:id/children    -> children of a resource
+POST   /resources/:id/children    -> add child
 ```
 
 **Response envelope:**
@@ -64,7 +60,7 @@ POST   /resources/:id/children    → add child
 ### tRPC conventions (for TypeScript fullstack)
 
 ```typescript
-// Queries (GET equivalent — cacheable)
+// Queries (GET equivalent -- cacheable)
 router.query('getUser', { input: z.object({ id: z.string() }), resolve: ... })
 
 // Mutations (POST/PATCH/DELETE equivalent)
@@ -76,7 +72,7 @@ router.mutation('createUser', { input: CreateUserSchema, resolve: ... })
 
 ### Validation schemas
 
-Always define schemas before writing handlers:
+Define schemas before writing handlers:
 
 **TypeScript (Zod):**
 ```typescript
@@ -105,8 +101,8 @@ Always produce three artifacts:
 ```
 Method | Path              | Auth | Input schema      | Response
 -------|-------------------|------|-------------------|----------
-POST   | /auth/login       | —    | LoginSchema       | { token, user }
-GET    | /users/:id        | JWT  | —                 | UserPublicSchema
+POST   | /auth/login       | --   | LoginSchema       | { token, user }
+GET    | /users/:id        | JWT  | --                | UserPublicSchema
 PATCH  | /users/:id/profile| JWT  | UpdateProfileSchema| UserPublicSchema
 ```
 
@@ -129,9 +125,9 @@ router.post('/users', validate(CreateUserSchema), async (req, res) => {
 ## Rules
 
 - Never expose internal IDs in URLs if they reveal business information (use UUIDs)
-- Auth must be explicit on every route — never "it's probably protected"
+- Auth must be explicit on every route
 - Pagination on any list endpoint that could return > 20 items
-- Input validation before any DB query — always
-- Response types must be explicit — never `any` or untyped `object`
+- Input validation before any DB query
+- Response types must be explicit -- never `any` or untyped `object`
 - Breaking API changes need a version prefix: `/v2/...`
-- If designing for EDA (tRPC) or Syplay (REST), match the existing style of those projects
+- Match the existing style of the project

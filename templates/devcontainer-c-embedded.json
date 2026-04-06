@@ -1,12 +1,12 @@
 {
   // Template: C/C++ Embedded (STM32, ARM Cortex-M)
   // Stack: GCC ARM toolchain + CMake + OpenOCD + Node.js (Claude Code)
-  // Use for: firmware NXIO-Lab, NXIO-Home, tout projet bare-metal ARM
+  // Use for: NXIO-Lab firmware, NXIO-Home, any bare-metal ARM project
   "name": "${localEnv:PROJECT_NAME:firmware}",
   "image": "mcr.microsoft.com/devcontainers/base:trixie",
 
   "features": {
-    // Node.js — requis pour Claude Code (npm) et MCP servers (npx)
+    // Node.js — required for Claude Code (npm) and MCP servers (npx)
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22"
     }
@@ -42,7 +42,7 @@
     }
   },
 
-  // Installer le toolchain ARM + outils embedded
+  // Install ARM toolchain + embedded tools
   "postCreateCommand": {
     "arm-toolchain": "sudo apt-get update -qq && sudo apt-get install -y -qq gcc-arm-none-eabi gdb-multiarch binutils-arm-none-eabi libnewlib-arm-none-eabi cmake ninja-build openocd stlink-tools clang-format",
     "unity-test": "git clone --depth 1 https://github.com/ThrowTheSwitch/Unity.git /home/vscode/.unity 2>/dev/null || true"

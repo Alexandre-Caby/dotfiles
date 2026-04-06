@@ -1,8 +1,8 @@
 #!/bin/bash
 # ============================================================
 # Dotfiles install script — Alexandre
-# Exécuté automatiquement par VSCode Dev Containers Dotfiles
-# Compatible : Debian/Ubuntu (apt), Alpine (apk), images slim
+# Executed automatically by VSCode Dev Containers Dotfiles
+# Compatible: Debian/Ubuntu (apt), Alpine (apk), images slim
 # ============================================================
 
 set -e
@@ -10,21 +10,26 @@ set -e
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLAUDE_CONFIG="$DOTFILES_DIR/claude"
 
-echo "🔧 Installation des dotfiles depuis $DOTFILES_DIR"
+echo "🔧 Installing dotfiles from $DOTFILES_DIR"
 
-# ── 1. Symlink ~/.claude → dotfiles/claude ─────────────────
-echo "  → Symlink ~/.claude"
+# ── 1. Symlink individual items from dotfiles/claude into ~/.claude ──
+echo "  → Symlinking ~/.claude items"
 if [ -d "$HOME/.claude" ] && [ ! -L "$HOME/.claude" ]; then
-  # Backup si dossier existant non-symlink
+  # Backup existing non-symlink directory
   mv "$HOME/.claude" "$HOME/.claude.backup.$(date +%s)"
-  echo "  ⚠  Ancien ~/.claude sauvegardé"
+  echo "  ⚠  Existing ~/.claude backed up"
 fi
-ln -sf "$CLAUDE_CONFIG" "$HOME/.claude"
-echo "  ✓ ~/.claude → $CLAUDE_CONFIG"
+mkdir -p "$HOME/.claude"
+ln -sf "$CLAUDE_CONFIG/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
+ln -sf "$CLAUDE_CONFIG/settings.json" "$HOME/.claude/settings.json"
+ln -sf "$CLAUDE_CONFIG/agents" "$HOME/.claude/agents"
+ln -sf "$CLAUDE_CONFIG/commands" "$HOME/.claude/commands"
+ln -sf "$CLAUDE_CONFIG/skills" "$HOME/.claude/skills"
+echo "  ✓ ~/.claude items symlinked from $CLAUDE_CONFIG"
 
-# ── 2. Installer curl si absent ────────────────────────────
+# ── 2. Install curl if absent ────────────────────────────────
 if ! command -v curl &>/dev/null; then
-  echo "  → Installation de curl"
+  echo "  → Installing curl"
   if command -v apt-get &>/dev/null; then
     apt-get update -qq && apt-get install -y -qq curl ca-certificates
   elif command -v apk &>/dev/null; then
@@ -32,167 +37,194 @@ if ! command -v curl &>/dev/null; then
   elif command -v yum &>/dev/null; then
     yum install -y -q curl ca-certificates
   else
-    echo "  ✗ Gestionnaire de paquets non reconnu — installer curl manuellement"
+    echo "  ✗ Unrecognized package manager — install curl manually"
     exit 1
   fi
 fi
 
-# ── 3. Installer Node.js si absent (requis pour les MCP) ───
-if ! command -v node &>/dev/null; then
-  echo "  → Installation de Node.js (LTS)"
+# ── 3. Install tmux if absent (optional, for agent workflows) ──
+if ! command -v tmux &>/dev/null; then
+  echo "  → Installing tmux"
   if command -v apt-get &>/dev/null; then
-    curl -fsSL https://deb.nodesource.com/setup_lts.x | bash - 2>/dev/null
+    apt-get install -y -qq tmux 2>/dev/null || true
+  elif command -v apk &>/dev/null; then
+    apk add --no-cache tmux 2>/dev/null || true
+  elif command -v yum &>/dev/null; then
+    yum install -y -q tmux 2>/dev/null || true
+  fi
+  command -v tmux &>/dev/null && echo "  ✓ tmux installed" || echo "  ℹ  tmux not available (optional)"
+fi
+
+# ── 4. Install Node.js if absent (required for MCP) ──────────
+if ! command -v node &>/dev/null; then
+  echo "  → Installing Node.js (LTS)"
+  if command -v apt-get &>/dev/null; then
+    SETUP_SCRIPT=$(mktemp)
+    curl -fsSL https://deb.nodesource.com/setup_lts.x -o "$SETUP_SCRIPT"
+    bash "$SETUP_SCRIPT"
+    rm -f "$SETUP_SCRIPT"
     apt-get install -y -qq nodejs
   elif command -v apk &>/dev/null; then
     apk add --no-cache nodejs npm
   elif command -v yum &>/dev/null; then
-    curl -fsSL https://rpm.nodesource.com/setup_lts.x | bash - 2>/dev/null
+    SETUP_SCRIPT=$(mktemp)
+    curl -fsSL https://rpm.nodesource.com/setup_lts.x -o "$SETUP_SCRIPT"
+    bash "$SETUP_SCRIPT"
+    rm -f "$SETUP_SCRIPT"
     yum install -y nodejs
   fi
   echo "  ✓ Node.js $(node --version 2>/dev/null)"
 fi
 
-# ── 4. Installer Claude Code ───────────────────────────────
+# ── 5. Install Claude Code ───────────────────────────────────
 if ! command -v claude &>/dev/null; then
-  echo "  → Installation de Claude Code via npm"
+  echo "  → Installing Claude Code via npm"
   npm install -g @anthropic-ai/claude-code 2>/dev/null && \
-    echo "  ✓ Claude Code installé : $(claude --version 2>/dev/null || echo 'version inconnue')" || \
-    echo "  ✗ Échec installation Claude Code (vérifier npm)"
-  # Ajouter au PATH courant si nécessaire
+    echo "  ✓ Claude Code installed: $(claude --version 2>/dev/null || echo 'unknown version')" || \
+    echo "  ✗ Claude Code installation failed (check npm)"
+  # Add to current PATH if needed
   export PATH="$HOME/.local/bin:$PATH"
 else
-  echo "  ✓ Claude Code déjà présent : $(claude --version 2>/dev/null)"
+  echo "  ✓ Claude Code already present: $(claude --version 2>/dev/null)"
 fi
 
-# ── 5. Installer les MCP servers globaux ───────────────────
-# (Requiert que Claude Code soit installé et dans le PATH)
+# ── 6. Install global MCP servers ────────────────────────────
+# (Requires Claude Code installed and in PATH)
 export PATH="$HOME/.local/bin:$PATH"
 
 if command -v claude &>/dev/null; then
-  echo "  → Configuration des MCP servers globaux"
+  echo "  → Configuring global MCP servers"
 
-  # Context7 — Documentation live des librairies (toujours actif, pas de clé API)
+  # Context7 — Live library documentation (always active, no API key)
   if ! claude mcp list 2>/dev/null | grep -q "context7"; then
     claude mcp add --scope user context7 -- npx -y @upstash/context7-mcp 2>/dev/null && \
-      echo "  ✓ MCP context7 ajouté" || \
-      echo "  ⚠  MCP context7 — échec (ignoré)"
+      echo "  ✓ MCP context7 added" || \
+      echo "  ⚠  MCP context7 — failed (ignored)"
   else
-    echo "  ✓ MCP context7 déjà configuré"
+    echo "  ✓ MCP context7 already configured"
   fi
 
-  # Tavily — Web search (requiert TAVILY_API_KEY dans l'environnement)
+  # Tavily — Web search (requires TAVILY_API_KEY in environment)
   if [ -n "$TAVILY_API_KEY" ]; then
     if ! claude mcp list 2>/dev/null | grep -q "tavily"; then
+      # Note: -e passes env vars via CLI args (visible in ps).
+      # claude mcp add does not yet support --env-file.
       claude mcp add --scope user tavily \
         -e TAVILY_API_KEY="$TAVILY_API_KEY" \
         -- npx -y @tavily-ai/mcp-server 2>/dev/null && \
-        echo "  ✓ MCP tavily ajouté" || \
-        echo "  ⚠  MCP tavily — échec (ignoré)"
+        echo "  ✓ MCP tavily added" || \
+        echo "  ⚠  MCP tavily — failed (ignored)"
     else
-      echo "  ✓ MCP tavily déjà configuré"
+      echo "  ✓ MCP tavily already configured"
     fi
   else
-    echo "  ℹ  MCP tavily ignoré (TAVILY_API_KEY non définie)"
-    echo "     → Ajouter TAVILY_API_KEY dans devcontainer.json > remoteEnv"
+    echo "  ℹ  MCP tavily skipped (TAVILY_API_KEY not set)"
+    echo "     → Add TAVILY_API_KEY to devcontainer.json > remoteEnv"
   fi
 
-  # GitHub MCP — Accès aux repos, PRs, issues (requiert GITHUB_TOKEN)
+  # GitHub MCP — Repo, PR, issue access (requires GITHUB_TOKEN)
   if [ -n "$GITHUB_TOKEN" ]; then
     if ! claude mcp list 2>/dev/null | grep -q "github"; then
+      # Note: -e passes env vars via CLI args (visible in ps).
+      # claude mcp add does not yet support --env-file.
       claude mcp add --scope user github \
         -e GITHUB_PERSONAL_ACCESS_TOKEN="$GITHUB_TOKEN" \
         -- npx -y @modelcontextprotocol/server-github 2>/dev/null && \
-        echo "  ✓ MCP github ajouté" || \
-        echo "  ⚠  MCP github — échec (ignoré)"
+        echo "  ✓ MCP github added" || \
+        echo "  ⚠  MCP github — failed (ignored)"
     else
-      echo "  ✓ MCP github déjà configuré"
+      echo "  ✓ MCP github already configured"
     fi
   else
-    echo "  ℹ  MCP github ignoré (GITHUB_TOKEN non défini)"
-    echo "     → Ajouter GITHUB_TOKEN dans devcontainer.json > remoteEnv"
+    echo "  ℹ  MCP github skipped (GITHUB_TOKEN not set)"
+    echo "     → Add GITHUB_TOKEN to devcontainer.json > remoteEnv"
   fi
 
 else
-  echo "  ⚠  Claude Code non trouvé dans PATH — MCP servers ignorés"
+  echo "  ⚠  Claude Code not found in PATH — MCP servers skipped"
 fi
 
-# ── 6. Exposer les scripts dotfiles dans le PATH ───────────
+# ── 7. Expose dotfiles scripts in PATH ───────────────────────
 SCRIPTS_DIR="$DOTFILES_DIR/scripts"
 if [ -d "$SCRIPTS_DIR" ]; then
   if ! grep -q "dotfiles/scripts" "$HOME/.bashrc" 2>/dev/null; then
     echo "" >> "$HOME/.bashrc"
     echo "# Dotfiles scripts" >> "$HOME/.bashrc"
     echo "export PATH=\"$SCRIPTS_DIR:\$PATH\"" >> "$HOME/.bashrc"
-    echo "  ✓ Scripts dotfiles ajoutés au PATH"
+    echo "  ✓ Dotfiles scripts added to PATH"
   fi
-  # Rendre tous les scripts exécutables
-  chmod +x "$SCRIPTS_DIR"/*.sh 2>/dev/null || true
+  # Make specific scripts executable
+  chmod +x "$SCRIPTS_DIR/session-handoff.sh" 2>/dev/null || true
 fi
 
-# ── 8. Copier les extras shell si applicable ───────────────
+# ── 8. Copy shell extras if applicable ────────────────────────
 if [ -f "$DOTFILES_DIR/config/.bashrc_extra" ]; then
-  if ! grep -q "bashrc_extra" "$HOME/.bashrc" 2>/dev/null; then
-    echo "" >> "$HOME/.bashrc"
-    echo "# Dotfiles extras" >> "$HOME/.bashrc"
-    echo "source $DOTFILES_DIR/config/.bashrc_extra" >> "$HOME/.bashrc"
-    echo "  ✓ .bashrc_extra ajouté"
+  if [ "$(stat -c '%u' "$DOTFILES_DIR/config/.bashrc_extra" 2>/dev/null)" = "$(id -u)" ]; then
+    if ! grep -q "bashrc_extra" "$HOME/.bashrc" 2>/dev/null; then
+      echo "" >> "$HOME/.bashrc"
+      echo "# Dotfiles extras" >> "$HOME/.bashrc"
+      echo "source $DOTFILES_DIR/config/.bashrc_extra" >> "$HOME/.bashrc"
+      echo "  ✓ .bashrc_extra added"
+    fi
+  else
+    echo "  ⚠  .bashrc_extra skipped — ownership mismatch"
   fi
 fi
 
-# ── 9. Assurer PATH pour les binaires locaux ───────────────
+# ── 9. Ensure PATH for local binaries ─────────────────────────
 if ! grep -q '\.local/bin' "$HOME/.bashrc" 2>/dev/null; then
   echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$HOME/.bashrc"
 fi
 
-# ── 10. Validation post-install ────────────────────────────
+# ── 10. Post-install validation ───────────────────────────────
 echo ""
-echo "🔍 Validation de l'installation..."
+echo "🔍 Validating installation..."
 ERRORS=0
-if [ -L "$HOME/.claude" ]; then
-  echo "  ✓ Symlink ~/.claude → $(readlink -f "$HOME/.claude")"
+if [ -d "$HOME/.claude" ]; then
+  echo "  ✓ Directory ~/.claude exists"
 else
-  echo "  ✗ Symlink ~/.claude manquant"
+  echo "  ✗ Directory ~/.claude missing"
   ERRORS=$((ERRORS+1))
 fi
 if [ -f "$HOME/.claude/CLAUDE.md" ]; then
-  echo "  ✓ CLAUDE.md trouvé"
+  echo "  ✓ CLAUDE.md found"
 else
-  echo "  ✗ CLAUDE.md introuvable"
+  echo "  ✗ CLAUDE.md not found"
   ERRORS=$((ERRORS+1))
 fi
 if [ -f "$HOME/.claude/settings.json" ]; then
-  echo "  ✓ settings.json trouvé"
+  echo "  ✓ settings.json found"
 else
-  echo "  ✗ settings.json introuvable"
+  echo "  ✗ settings.json not found"
   ERRORS=$((ERRORS+1))
 fi
 if command -v claude &>/dev/null; then
-  echo "  ✓ Claude Code dans PATH : $(claude --version 2>/dev/null || echo 'version inconnue')"
+  echo "  ✓ Claude Code in PATH: $(claude --version 2>/dev/null || echo 'unknown version')"
 else
-  echo "  ✗ Claude Code pas dans PATH"
+  echo "  ✗ Claude Code not in PATH"
   ERRORS=$((ERRORS+1))
 fi
 if [ -d "$HOME/.claude/agents" ]; then
   AGENT_COUNT=$(ls "$HOME/.claude/agents/"*.md 2>/dev/null | wc -l)
-  echo "  ✓ $AGENT_COUNT agents disponibles"
+  echo "  ✓ $AGENT_COUNT agents available"
 else
-  echo "  ✗ Dossier agents/ introuvable"
+  echo "  ✗ agents/ directory not found"
   ERRORS=$((ERRORS+1))
 fi
 if [ -d "$HOME/.claude/commands" ]; then
   CMD_COUNT=$(ls "$HOME/.claude/commands/"*.md 2>/dev/null | wc -l)
-  echo "  ✓ $CMD_COUNT slash commands disponibles"
+  echo "  ✓ $CMD_COUNT slash commands available"
 else
-  echo "  ✗ Dossier commands/ introuvable"
+  echo "  ✗ commands/ directory not found"
   ERRORS=$((ERRORS+1))
 fi
 
 echo ""
 if [ $ERRORS -eq 0 ]; then
-  echo "✅ Dotfiles installés avec succès — 0 erreur"
+  echo "✅ Dotfiles installed successfully — 0 errors"
 else
-  echo "⚠  Dotfiles installés avec $ERRORS erreur(s) — vérifier ci-dessus"
+  echo "⚠  Dotfiles installed with $ERRORS error(s) — check above"
 fi
 echo ""
-echo "   MCP servers configurés :"
-command -v claude &>/dev/null && claude mcp list 2>/dev/null | sed 's/^/     • /' || echo "     (claude non disponible dans ce shell)"
+echo "   Configured MCP servers:"
+command -v claude &>/dev/null && claude mcp list 2>/dev/null | sed 's/^/     • /' || echo "     (claude not available in this shell)"

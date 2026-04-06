@@ -1,7 +1,7 @@
 {
   // Template: Full polyglot devcontainer
   // Stack: Node.js 22 + Python 3.12 + Rust stable
-  // Use for: multi-language projects (ex: NXIO agent-manager + MCP servers)
+  // Use for: multi-language projects (e.g. NXIO agent-manager + MCP servers)
   "name": "${localEnv:PROJECT_NAME:polyglot}",
   "image": "mcr.microsoft.com/devcontainers/base:trixie",
 

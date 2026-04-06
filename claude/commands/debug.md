@@ -1,38 +1,38 @@
-# Debug — Diagnostic structuré
+# Debug — Structured diagnosis
 
-Applique une méthode de diagnostic systématique pour identifier et résoudre un bug.
+Applies a systematic diagnostic method to identify and resolve a bug.
 
-## Protocole
+## Protocol
 
-### Phase 1 : Reproduire
-- Identifier les étapes exactes pour reproduire le bug
-- Confirmer que le bug est reproductible de manière fiable
-- Isoler l'input minimal qui déclenche le problème
+### Phase 1: Reproduce
+- Identify the exact steps to reproduce the bug
+- Confirm the bug is reliably reproducible
+- Isolate the minimal input that triggers the problem
 
-### Phase 2 : Isoler
-- Identifier le fichier et la zone de code responsable
-- Utiliser des logs/breakpoints pour tracer le flux d'exécution
-- Réduire le périmètre : est-ce le code, une dépendance, la config, ou l'environnement ?
+### Phase 2: Isolate
+- Identify the file and code area responsible
+- Use logs/breakpoints to trace the execution flow
+- Narrow the scope: is it the code, a dependency, config, or the environment?
 
-### Phase 3 : Diagnostiquer
-- Formuler une hypothèse sur la cause racine
-- Vérifier l'hypothèse avec un test ou une modification ciblée
-- Si l'hypothèse est fausse, revenir à Phase 2
+### Phase 3: Diagnose
+- Formulate a hypothesis about the root cause
+- Verify the hypothesis with a test or targeted modification
+- If the hypothesis is wrong, go back to Phase 2
 
-### Phase 4 : Corriger
-- Appliquer le fix minimal qui résout le problème
-- Vérifier que le fix ne casse rien d'autre (lancer les tests)
-- Écrire un test qui aurait attrapé ce bug
+### Phase 4: Fix
+- Apply the minimal fix that resolves the problem
+- Verify the fix doesn't break anything else (run tests)
+- Write a test that would have caught this bug
 
-## Format de sortie
+## Output format
 
 ```
-## Diagnostic — [description courte du bug]
+## Diagnosis — [short bug description]
 
-**Symptôme** : [ce qui se passe]
-**Attendu** : [ce qui devrait se passer]
-**Cause racine** : [pourquoi ça arrive]
-**Fix appliqué** : [ce qui a été changé]
-**Test ajouté** : [oui/non — description]
-**Régression check** : [tests passent ✅ / échouent ❌]
+**Symptom**: [what happens]
+**Expected**: [what should happen]
+**Root cause**: [why it happens]
+**Fix applied**: [what was changed]
+**Test added**: [yes/no — description]
+**Regression check**: [tests pass ✅ / fail ❌]
 ```

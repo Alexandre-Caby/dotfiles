@@ -1,119 +1,119 @@
-# New Feature — Cycle complet orchestré avec agents et teams
+# New Feature — Full orchestrated cycle with agents and teams
 
-Orchestre le cycle complet de développement d'une feature en utilisant automatiquement les bons agents et teams selon le contexte.
+Orchestrates the complete feature development cycle by automatically using the right agents and teams based on context.
 
-## Paramètre
+## Parameter
 
-$ARGUMENTS = description de la feature (ex: "auth JWT pour l'API", "parser BCI signal en Rust")
+$ARGUMENTS = feature description (e.g., "JWT auth for the API", "BCI signal parser in Rust")
 
-## Phase 1 — Analyse et plan
+## Phase 1 — Analysis and plan
 
-### 1a. Recherche préalable (si techno inconnue)
+### 1a. Preliminary research (if unknown technology)
 
-Si la feature implique une technologie, lib ou pattern pas encore utilisé dans le projet :
-- **Agent `docs-fetcher`** → documentation live via Context7
-- **Agent `web-search`** → état de l'art, comparaisons, best practices
-- **Team `research-team`** → si plusieurs technos à évaluer
+If the feature involves a technology, lib, or pattern not yet used in the project:
+- **Agent `docs-fetcher`** -> live documentation via Context7
+- **Agent `web-search`** -> state of the art, comparisons, best practices
+- **Team `research-team`** -> if multiple technologies to evaluate
 
-### 1b. Choix du stack (si ambigu)
+### 1b. Stack choice (if ambiguous)
 
-Si le langage ou le framework n'est pas évident :
-- **Agent `language-advisor`** → analyser les contraintes et recommander
-- Ne JAMAIS assumer — toujours justifier le choix
+If the language or framework is not obvious:
+- **Agent `language-advisor`** -> analyze constraints and recommend
+- NEVER assume — always justify the choice
 
-### 1c. Plan structuré
+### 1c. Structured plan
 
-Utiliser **agent `feature-planner`** pour produire :
+Use **agent `feature-planner`** to produce:
 
-| # | Tâche | Taille | Fichiers | Tests prévus |
-|---|-------|--------|----------|--------------|
+| # | Task | Size | Files | Planned tests |
+|---|------|------|-------|---------------|
 | 1 | ... | S/M/L | ... | ... |
 
-Plus :
-- Risques identifiés et mitigations
-- Scope cuts possibles (si deadline serrée)
-- Dépendances nouvelles à justifier
+Plus:
+- Identified risks and mitigations
+- Possible scope cuts (if tight deadline)
+- New dependencies to justify
 
-### 1d. Validation architecture (si > 3 fichiers ou changement structurel)
+### 1d. Architecture validation (if > 3 files or structural change)
 
-- **Agent `architect`** → review coupling, SOLID, scalability, red flags
-- **Agent `api-designer`** → si endpoints/routes sont impliqués
+- **Agent `architect`** -> review coupling, SOLID, scalability, red flags
+- **Agent `api-designer`** -> if endpoints/routes are involved
 
-**→ STOP : Présenter le plan et attendre la validation avant de continuer.**
+**-> STOP: Present the plan and wait for validation before continuing.**
 
-## Phase 2 — Implémentation TDD
+## Phase 2 — TDD Implementation
 
-### Dispatch automatique
+### Automatic dispatch
 
-- **Si feature ≥ 3 fichiers ou front + back** → déléguer à **team `feature-dev-team`**
-- **Si feature simple (1-2 fichiers)** → exécution directe avec **agent `tdd-guide`**
+- **If feature >= 3 files or front + back** -> delegate to **team `feature-dev-team`**
+- **If simple feature (1-2 files)** -> direct execution with **agent `tdd-guide`**
 
-### Cycle pour chaque tâche
+### Cycle for each task
 
-1. **Agent `tdd-guide`** supervise le cycle Red-Green-Refactor :
-   - Écrire le test qui échoue (RED)
-   - Écrire le code minimal qui passe (GREEN)
-   - Refactorer sans casser les tests
-   - Vérifier : `vitest run` / `pytest` / `cargo test` / `ctest`
+1. **Agent `tdd-guide`** supervises the Red-Green-Refactor cycle:
+   - Write the failing test (RED)
+   - Write the minimal code that passes (GREEN)
+   - Refactor without breaking tests
+   - Verify: `vitest run` / `pytest` / `cargo test` / `ctest`
 
-2. **Agent `test-writer`** complète les tests si couverture < 80% :
-   - Edge cases : null, empty, overflow, erreurs réseau
-   - Tests d'intégration si API/DB impliqué
+2. **Agent `test-writer`** completes tests if coverage < 80%:
+   - Edge cases: null, empty, overflow, network errors
+   - Integration tests if API/DB involved
 
-3. Si nouvelle dépendance ajoutée → **agent `dependency-auditor`** vérifie CVE
+3. If new dependency added -> **agent `dependency-auditor`** checks for CVE
 
-Règles strictes :
-- **Jamais de code sans test**
-- Une tâche à la fois, dans l'ordre du plan
-- Si migration DB nécessaire → **agent `migration-writer`**
-- Conventional commits : `feat(scope): description`
+Strict rules:
+- **Never code without tests**
+- One task at a time, in plan order
+- If DB migration needed -> **agent `migration-writer`**
+- Conventional commits: `feat(scope): description`
 
-## Phase 3 — Review et audit
+## Phase 3 — Review and audit
 
-### Review automatique
+### Automatic review
 
-- **Agent `security-reviewer`** → OWASP WSTG sur le code changé
-- **Agent `refactor-cleaner`** → AI slop, dead code, simplifications
-- **Agent `perf-auditor`** → si endpoints, requêtes DB, ou traitement lourd
+- **Agent `security-reviewer`** -> OWASP WSTG on changed code
+- **Agent `refactor-cleaner`** -> AI slop, dead code, simplifications
+- **Agent `perf-auditor`** -> if endpoints, DB queries, or heavy processing
 
 ### Checklist
 
-- [ ] Tous les tests passent
-- [ ] Couverture ≥ 80% sur le nouveau code
-- [ ] Pas de régression
-- [ ] Pas de secrets hardcodés
-- [ ] Pas d'AI slop (commentaires paraphrase, over-abstraction)
-- [ ] Documentation Doxygen sur les nouvelles fonctions publiques
-- [ ] Pas de `any` / `# type: ignore` / `unsafe` non justifié
+- [ ] All tests pass
+- [ ] Coverage >= 80% on new code
+- [ ] No regressions
+- [ ] No hardcoded secrets
+- [ ] No AI slop (paraphrase comments, over-abstraction)
+- [ ] Doxygen documentation on new public functions
+- [ ] No unjustified `any` / `# type: ignore` / `unsafe`
 
 ## Phase 4 — Commit
 
-- **Agent `git-workflow`** → message conventional commit, scope adapté
-- **Agent `env-auditor`** → vérifier cohérence .env / .env.example si modifié
+- **Agent `git-workflow`** -> conventional commit message, appropriate scope
+- **Agent `env-auditor`** -> verify .env / .env.example consistency if modified
 
-## Format de sortie
+## Output format
 
 ```
-## ✅ Feature terminée — [nom]
+## ✅ Feature completed — [name]
 
-### Agents utilisés
-- [agent-1] — [ce qu'il a fait]
-- [agent-2] — [ce qu'il a fait]
-- Team [team-name] (si utilisée)
+### Agents used
+- [agent-1] — [what it did]
+- [agent-2] — [what it did]
+- Team [team-name] (if used)
 
-### Résumé
-[1-2 phrases]
+### Summary
+[1-2 sentences]
 
-### Fichiers créés/modifiés
-- [fichier] — [description]
+### Files created/modified
+- [file] — [description]
 
 ### Tests
-- X tests écrits / X assertions
-- Couverture : X%
+- X tests written / X assertions
+- Coverage: X%
 
 ### Review
-- Qualité : X/10 | Sécurité : X/10
-- Issues corrigées : X
+- Quality: X/10 | Security: X/10
+- Issues fixed: X
 
 ### Commits
 - feat(scope): ...

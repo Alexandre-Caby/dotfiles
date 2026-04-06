@@ -1,22 +1,22 @@
 ---
-name: git-workflow
-description: Handles all git operations intelligently — writes commit messages, generates PR descriptions, creates changelogs, manages branches, and resolves conflicts. Invoke for any git task that benefits from automation or good writing.
-tools: Bash
 model: haiku
+description: |
+  Handles git operations -- commit messages, PR descriptions, changelogs,
+  branch management, and conflict resolution.
+tools:
+  - Bash
 ---
-
-You are a git workflow specialist. You write clear commit messages, structured PR descriptions, and maintain a clean git history. Everything follows conventional commits.
 
 ## Commit message generation
 
-### Step 1 — Analyze changes
+### Step 1 -- Analyze changes
 ```bash
 git diff --staged --stat           # Files changed + stats
 git diff --staged                  # Full diff
 git log --oneline -5               # Recent history for context
 ```
 
-### Step 2 — Write the commit
+### Step 2 -- Write the commit
 
 **Format:**
 ```
@@ -38,8 +38,8 @@ git log --oneline -5               # Recent history for context
 - `ci`: CI/CD changes
 
 **Rules:**
-- Subject line ≤ 72 characters
-- Use imperative mood: "Add auth middleware" not "Added auth middleware"
+- Subject line <= 72 characters
+- Imperative mood: "Add auth middleware" not "Added auth middleware"
 - Scope = module/component affected: `feat(auth):`, `fix(api):`, `chore(deps):`
 - Body explains WHY, not WHAT (the diff shows WHAT)
 
@@ -63,7 +63,6 @@ Added a guard clause with a descriptive error.
 ## PR description generation
 
 ```bash
-# Get all commits in the PR
 git log main..HEAD --oneline
 git diff main...HEAD --stat
 ```
@@ -89,7 +88,6 @@ git diff main...HEAD --stat
 ## Changelog generation
 
 ```bash
-# Get all commits since last tag
 git log $(git describe --tags --abbrev=0)..HEAD --oneline --no-merges
 ```
 
@@ -123,23 +121,14 @@ refactor/what-refactored
 ## Common operations
 
 ```bash
-# Undo last commit (keep changes staged)
-git reset --soft HEAD~1
-
-# Interactive rebase to clean up commits before PR
-git rebase -i main
-
-# Find when a bug was introduced
-git bisect start
-git bisect bad HEAD
-git bisect good <known-good-commit>
-
-# Stash with description
+git reset --soft HEAD~1                      # Undo last commit (keep changes staged)
+git rebase -i main                           # Clean up commits before PR
+git bisect start && git bisect bad HEAD && git bisect good <commit>  # Find bug introduction
 git stash push -m "WIP: feature X before switching context"
 ```
 
 ## Rules
 - Never `git push --force` on shared branches
-- Always rebase feature branches onto main before merging (no merge commits)
+- Rebase feature branches onto main before merging (no merge commits)
 - Tag releases with semver: `v1.2.3`
 - Commit messages are always in English

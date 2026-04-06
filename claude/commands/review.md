@@ -1,54 +1,54 @@
-# Code Review — Depuis le dernier commit
+# Code Review — Since last commit
 
-Analyse les changements depuis le dernier commit et fournis un code review structuré.
+Analyzes changes since the last commit and provides a structured code review.
 
-## Étapes
+## Steps
 
-1. Exécuter `git diff HEAD~1` pour voir les changements
-2. Si pas de commit précédent, utiliser `git diff --staged` puis `git diff`
+1. Run `git diff HEAD~1` to see the changes
+2. If no previous commit, use `git diff --staged` then `git diff`
 
-## Checklist de review
+## Review checklist
 
-Pour chaque fichier modifié, évaluer :
+For each modified file, evaluate:
 
 ### Correctness
-- Logique métier correcte ?
-- Edge cases gérés ?
-- Erreurs propagées correctement ?
+- Is business logic correct?
+- Are edge cases handled?
+- Are errors propagated correctly?
 
 ### Security
-- Inputs validés ?
-- Pas de secrets hardcodés ?
-- Pas d'injection SQL/XSS/command possible ?
+- Are inputs validated?
+- No hardcoded secrets?
+- No possible SQL/XSS/command injection?
 
 ### Performance
-- Requêtes N+1 ?
-- Calculs inutilement répétés ?
-- Mémoire : objets volumineux non libérés ?
+- N+1 queries?
+- Unnecessarily repeated computations?
+- Memory: large objects not freed?
 
 ### Maintainability
-- Nommage clair et cohérent ?
-- Documentation Doxygen sur les nouvelles fonctions publiques ?
-- Code dupliqué ?
-- Tests couvrant les changements ?
+- Clear and consistent naming?
+- Doxygen documentation on new public functions?
+- Duplicated code?
+- Tests covering the changes?
 
-## Format de sortie
+## Output format
 
 ```
 ## Review — [date]
 
-### Résumé
-[1-2 phrases sur la nature des changements]
+### Summary
+[1-2 sentences about the nature of the changes]
 
-### 🔴 Critique (bloque le merge)
-- [fichier:ligne] Description du problème
+### 🔴 Critical (blocks merge)
+- [file:line] Problem description
 
-### 🟡 Important (à corriger)
-- [fichier:ligne] Description
+### 🟡 Important (should fix)
+- [file:line] Description
 
 ### 🟢 Suggestions (nice to have)
-- [fichier:ligne] Description
+- [file:line] Description
 
-### ✅ Points positifs
-- Ce qui est bien fait
+### ✅ Positive points
+- What is well done
 ```

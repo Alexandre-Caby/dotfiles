@@ -1,39 +1,39 @@
-# Plan — Feature ou tâche
+# Plan — Feature or task
 
-Crée un plan d'implémentation détaillé pour la feature ou tâche décrite par l'utilisateur.
+Creates a detailed implementation plan for the feature or task described by the user.
 
-## Étapes
+## Steps
 
-1. **Comprendre** — Lire le code existant pertinent avant de proposer quoi que ce soit
-2. **Analyser** — Identifier les fichiers impactés, les dépendances, et les risques
-3. **Découper** — Créer des tâches concrètes et ordonnées
+1. **Understand** — Read the relevant existing code before proposing anything
+2. **Analyze** — Identify impacted files, dependencies, and risks
+3. **Break down** — Create concrete, ordered tasks
 
-## Format de sortie
+## Output format
 
 ```
-## Plan : [titre de la feature]
+## Plan: [feature title]
 
-### Contexte
-[Ce qui existe, ce qui doit changer, pourquoi]
+### Context
+[What exists, what needs to change, why]
 
-### Approche technique
-[Choix d'architecture, patterns à utiliser, justification]
+### Technical approach
+[Architecture choices, patterns to use, justification]
 
-### Tâches
-1. [ ] Tâche 1 — [S/M/L] — [fichier(s) impacté(s)]
-2. [ ] Tâche 2 — [S/M/L] — [fichier(s)]
+### Tasks
+1. [ ] Task 1 — [S/M/L] — [impacted file(s)]
+2. [ ] Task 2 — [S/M/L] — [file(s)]
 ...
 
-### Risques identifiés
-- [Risque] → [Mitigation]
+### Identified risks
+- [Risk] -> [Mitigation]
 
-### Ce qu'on ne fait PAS (scope cut)
-- [Feature/détail volontairement exclu et pourquoi]
+### What we are NOT doing (scope cut)
+- [Feature/detail intentionally excluded and why]
 ```
 
-## Règles
+## Rules
 
-- Estimation : S = <2h, M = 2-4h, L = 1 jour
-- Toujours inclure une section "scope cut"
-- Identifier les tâches parallélisables vs séquentielles
-- Si la tâche est un L, proposer un découpage en sous-tâches S/M
+- Estimation: S = <2h, M = 2-4h, L = 1 day
+- Always include a "scope cut" section
+- Identify parallelizable vs sequential tasks
+- If the task is an L, propose breaking it down into S/M sub-tasks

@@ -102,10 +102,10 @@ OUTPUT+="Read CONTEXT.md before starting.\n"
 OUTPUT+="\`\`\`\n"
 
 # ── Output ───────────────────────────────────────────────────
-printf "$OUTPUT"
+printf '%s' "$OUTPUT"
 
 if $SAVE_MODE; then
-  printf "$OUTPUT" > "$CONTEXT_FILE"
+  printf '%s' "$OUTPUT" > "$CONTEXT_FILE"
   echo ""
   echo -e "${GREEN}✓ Written to $CONTEXT_FILE${RESET}"
 fi
@@ -123,7 +123,7 @@ if $COPY_MODE; then
   fi
 
   if [ -n "$CLIP_CMD" ]; then
-    printf "$OUTPUT" | $CLIP_CMD
+    printf '%s' "$OUTPUT" | $CLIP_CMD
     echo -e "${GREEN}✓ Copied to clipboard${RESET}"
   else
     echo -e "${YELLOW}⚠  No clipboard tool found (xclip/xsel/pbcopy/clip.exe)${RESET}"

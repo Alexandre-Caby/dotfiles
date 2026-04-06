@@ -1,36 +1,36 @@
-# Init — Bootstrap d'un nouveau projet avec devcontainer
+# Init — Bootstrap a new project with devcontainer
 
-Initialise un projet complet avec devcontainer, structure de base, et configuration Claude Code.
+Initializes a complete project with devcontainer, base structure, and Claude Code configuration.
 
-## Paramètre
+## Parameter
 
-$ARGUMENTS = stack du projet (ex: "node", "python", "rust", "full", "c-embedded", "base", "go")
+$ARGUMENTS = project stack (e.g., "node", "python", "rust", "full", "c-embedded", "base", "go")
 
-## Agents auto-activés
+## Auto-activated agents
 
-- **`language-advisor`** — si le stack n'est pas spécifié, analyser le contexte pour recommander
-- **`devcontainer-init`** — génération du devcontainer.json adapté
+- **`language-advisor`** — if the stack is not specified, analyze context to recommend
+- **`devcontainer-init`** — generate the appropriate devcontainer.json
 
-## Étapes
+## Steps
 
-### 1. Détecter ou demander le stack
+### 1. Detect or ask for the stack
 
-Si `$ARGUMENTS` est vide, détecter via les fichiers existants :
-- `package.json` → node
-- `pyproject.toml` / `requirements.txt` → python
-- `Cargo.toml` → rust
-- `CMakeLists.txt` / `Makefile` avec arm-none-eabi → c-embedded
-- Plusieurs langages → full
+If `$ARGUMENTS` is empty, detect via existing files:
+- `package.json` -> node
+- `pyproject.toml` / `requirements.txt` -> python
+- `Cargo.toml` -> rust
+- `CMakeLists.txt` / `Makefile` with arm-none-eabi -> c-embedded
+- Multiple languages -> full
 
-### 2. Créer la structure de base
+### 2. Create the base structure
 
 ```bash
 mkdir -p .devcontainer src tests docs
 ```
 
-### 3. Générer le devcontainer.json
+### 3. Generate devcontainer.json
 
-Utiliser l'agent `devcontainer-init` pour générer le fichier. Se baser sur les templates existants :
+Use the `devcontainer-init` agent to generate the file. Base on existing templates:
 
 | Stack | Template source |
 |---|---|
@@ -39,16 +39,16 @@ Utiliser l'agent `devcontainer-init` pour générer le fichier. Se baser sur les
 | `rust` | `~/dotfiles/templates/devcontainer-rust.json` |
 | `c-embedded` | `~/dotfiles/templates/devcontainer-c-embedded.json` |
 | `full` / polyglot | `~/dotfiles/templates/devcontainer-full.json` |
-| `base` / `go` / autre | `~/dotfiles/templates/devcontainer-base.json` (+ features à décommenter) |
+| `base` / `go` / other | `~/dotfiles/templates/devcontainer-base.json` (+ features to uncomment) |
 
-Règles critiques (toujours appliquer) :
-- **ANTHROPIC_API_KEY**, **TAVILY_API_KEY**, **GITHUB_TOKEN** dans remoteEnv
-- Feature **Node.js 22** obligatoire dans TOUS les templates (requis pour Claude Code + MCP)
-- Extensions VSCode adaptées au stack
+Critical rules (always apply):
+- **ANTHROPIC_API_KEY**, **TAVILY_API_KEY**, **GITHUB_TOKEN** in remoteEnv
+- **Node.js 22** feature mandatory in ALL templates (required for Claude Code + MCP)
+- VSCode extensions adapted to the stack
 - `remoteUser: "vscode"`
-- NE PAS mettre `install.sh` dans postCreateCommand (VSCode dotfiles feature s'en charge)
+- Do NOT put `install.sh` in postCreateCommand (VSCode dotfiles feature handles it)
 
-### 4. Générer le .mcp.json projet (si pertinent)
+### 4. Generate project .mcp.json (if relevant)
 
 ```json
 {
@@ -65,51 +65,51 @@ Règles critiques (toujours appliquer) :
 }
 ```
 
-### 5. Générer les fichiers de config de base
+### 5. Generate base config files
 
-Selon le stack :
+Depending on the stack:
 
-**Node/TypeScript** :
+**Node/TypeScript**:
 - `.prettierrc` (semi: false, singleQuote: true)
 - `tsconfig.json` (strict: true)
 - `.eslintrc.json`
 - `vitest.config.ts`
 
-**Python** :
+**Python**:
 - `pyproject.toml` (ruff, pytest, uv)
 - `ruff.toml`
 
-**Rust** :
+**Rust**:
 - `clippy.toml`
 - `rustfmt.toml`
 
-**C/Embedded** :
+**C/Embedded**:
 - `.clang-format`
 - `CMakeLists.txt` (base)
 
-### 6. Créer le CLAUDE.md projet
+### 6. Create project CLAUDE.md
 
-Créer un `CLAUDE.md` à la racine du projet :
+Create a `CLAUDE.md` at the project root:
 
 ```markdown
-# [Nom du projet]
+# [Project name]
 
 ## Description
-[À compléter]
+[To be completed]
 
 ## Stack
-- Langage : [détecté]
-- Framework : [détecté ou à compléter]
-- Tests : [runner détecté]
+- Language: [detected]
+- Framework: [detected or to be completed]
+- Tests: [detected runner]
 
 ## Structure
-[arborescence générée]
+[generated tree]
 
-## Conventions spécifiques au projet
-[À compléter — les conventions globales s'appliquent via ~/.claude/CLAUDE.md]
+## Project-specific conventions
+[To be completed — global conventions apply via ~/.claude/CLAUDE.md]
 ```
 
-### 7. Git init + premier commit
+### 7. Git init + first commit
 
 ```bash
 git init
@@ -124,16 +124,16 @@ git commit -m "feat: initial project setup with devcontainer
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
-## Format de sortie
+## Output format
 
 ```
-✅ Projet initialisé — [stack]
+✅ Project initialized — [stack]
 
-Fichiers créés :
+Files created:
   .devcontainer/devcontainer.json
   CLAUDE.md
   .mcp.json
-  [autres fichiers selon stack]
+  [other files depending on stack]
 
-Prochaine étape : ouvrir dans VSCode → "Reopen in Container"
+Next step: open in VSCode -> "Reopen in Container"
 ```

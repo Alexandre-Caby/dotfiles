@@ -3,24 +3,24 @@
 Guide for adding new agents, teams, skills, and MCP servers to `~/.claude/`.
 Read this before creating any new component for the Claude Code environment.
 
-## Où mettre quoi
+## Where to Put What
 
 ```
 ~/.claude/
 ├── agents/
-│   ├── my-agent.md          ← agent spécialisé
+│   ├── my-agent.md          <- specialized agent
 │   └── teams/
-│       └── my-team.md       ← orchestration multi-agents
+│       └── my-team.md       <- multi-agent orchestration
 ├── skills/
-│   └── my-skill.md          ← savoir métier ou conventions
-└── settings.json            ← permissions, hooks, env vars
+│   └── my-skill.md          <- domain knowledge or conventions
+└── settings.json            <- permissions, hooks, env vars
 ```
 
 ---
 
-## Créer un Agent
+## Creating an Agent
 
-### Template minimal
+### Minimal Template
 
 ```markdown
 ---
@@ -40,70 +40,70 @@ tools:
   - Edit
   - Glob
   - Grep
-model: claude-haiku-4-5            # voir choix de modèle ci-dessous
+model: claude-haiku-4-5            # see model selection below
 ---
 
-[Instructions de comportement de l'agent — en prose ou sections]
+[Agent behavior instructions — in prose or sections]
 ```
 
-### Choix du modèle
+### Model Selection
 
-| Modèle | Quand l'utiliser | Coût relatif |
+| Model | When to Use | Relative Cost |
 |---|---|---|
-| `claude-haiku-4-5` | Tâches répétitives, formatage, commits, audit simple | $ |
-| `claude-sonnet-4-5` | Analyse, exploration, génération de code, debug | $$ |
-| `claude-opus-4-5` | Architecture, décisions complexes, spec produit | $$$$ |
+| `claude-haiku-4-5` | Repetitive tasks, formatting, commits, simple audits | $ |
+| `claude-sonnet-4-5` | Analysis, exploration, code generation, debugging | $$ |
+| `claude-opus-4-5` | Architecture, complex decisions, product specs | $$$$ |
 
-> Règle : toujours choisir le modèle le moins cher qui fait le job.
-> Un agent git-commit n'a pas besoin d'Opus.
+> Rule: always pick the cheapest model that gets the job done.
+> A git-commit agent does not need Opus.
 
-### Outils disponibles
+### Available Tools
 
 ```yaml
-# Lecture seule
+# Read-only
 tools: [Read, Bash, Glob, Grep]
 
-# Création/modification de fichiers
+# File creation/modification
 tools: [Read, Write, Edit, Bash, Glob, Grep]
 
-# Orchestration (pour les teams seulement)
+# Orchestration (teams only)
 tools: [Task, Read, Bash]
 
-# Accès MCP (contexte7, tavily, github)
+# MCP access (context7, tavily, github)
 tools: [mcp__context7__resolve-library-id, mcp__context7__get-library-docs]
 ```
 
-### Pièges à éviter
+### Pitfalls to Avoid
 
-- **Description trop vague** → "Helps with code" ne sera jamais invoqué correctement
-- **Trop d'outils déclarés** → déclarer uniquement ce dont l'agent a besoin
-- **Pas de règles de comportement** → l'agent sans règles dérive sur des cas limites
-- **Modèle trop puissant** → Haiku pour les tâches mécaniques, Opus pour la réflexion profonde
+- **Vague description** -> "Helps with code" will never be invoked correctly
+- **Too many tools declared** -> only declare what the agent actually needs
+- **No behavior rules** -> an agent without rules drifts on edge cases
+- **Overpowered model** -> Haiku for mechanical tasks, Opus for deep reasoning
 
-### Structure d'un bon agent
+### Structure of a Good Agent
 
 ```markdown
-## Étapes (ou phases)
-[Numérotées, séquentielles — l'agent suit dans l'ordre]
+## Steps (or phases)
+[Numbered, sequential — the agent follows them in order]
 
 ## Output format
-[Format exact de ce que l'agent produit — pas de surprise]
+[Exact format of what the agent produces — no surprises]
 
 ## Rules
-[Liste courte de règles absolues — ce que l'agent ne doit jamais faire]
+[Short list of absolute rules — what the agent must never do]
 ```
 
 ---
 
-## Créer une Team
+## Creating a Team
 
-Une team est un agent dont le rôle est de **spawner d'autres agents en parallèle** et de synthétiser leurs résultats. Elle vit dans `agents/teams/`.
+A team is an agent whose role is to **spawn other agents in parallel** and synthesize their results. It lives in `agents/teams/`.
 
-### Contraintes importantes
+### Important Constraints
 
-- Les subagents **ne peuvent pas spawner d'autres subagents** — la team est le seul niveau d'orchestration
-- La team a besoin de l'outil `Task` dans ses outils
-- Requiert `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` dans settings.json (déjà configuré)
+- Subagents **cannot spawn other subagents** — the team is the only orchestration level
+- The team needs the `Task` tool in its tool list
+- Requires `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` in settings.json (already configured)
 
 ### Template
 
@@ -112,7 +112,7 @@ Une team est un agent dont le rôle est de **spawner d'autres agents en parallè
 name: my-team
 description: |
   Orchestrates [A], [B], [C] agents in parallel for [use case].
-  Use when: [condition plus complexe qu'un seul agent].
+  Use when: [condition more complex than a single agent].
 tools:
   - Task
   - Read
@@ -120,26 +120,26 @@ tools:
 model: claude-sonnet-4-5
 ---
 
-## Phase 1 — Parallèle
+## Phase 1 — Parallel
 
 Spawn simultaneously:
 
 **Agent 1 — [agent-name]**
-[Prompt exact pour cet agent]
+[Exact prompt for this agent]
 
 **Agent 2 — [agent-name]**
-[Prompt exact pour cet agent]
+[Exact prompt for this agent]
 
-## Phase 2 — Séquentiel (après retour de la Phase 1)
+## Phase 2 — Sequential (after Phase 1 returns)
 
-[Ce qui se passe une fois les résultats des agents parallèles reçus]
+[What happens once the parallel agents' results are received]
 
 ## Output
 
-[Format de la synthèse finale]
+[Format of the final synthesis]
 ```
 
-### Pattern de spawn
+### Spawn Pattern
 
 ```markdown
 Spawn these agents at the same time:
@@ -153,67 +153,67 @@ Prompt: "Fetch docs for @auth/core v1.2.3, specifically token rotation and refre
 
 ---
 
-## Créer un Skill
+## Creating a Skill
 
-Un skill est du markdown libre — pas de frontmatter. C'est du savoir opinioné.
+A skill is free-form markdown — no frontmatter. It is opinionated knowledge.
 
-### Structure recommandée
+### Recommended Structure
 
 ```markdown
-# Skill: [Nom]
+# Skill: [Name]
 
-[1-2 phrases : quand lire ce skill, quel problème il résout]
+[1-2 sentences: when to read this skill, what problem it solves]
 
-## Principe fondamental
-[La règle la plus importante — avant tout le reste]
+## Core Principle
+[The most important rule — before everything else]
 
-## Patterns positifs ✅
-[Ce qu'on fait — avec exemples de code]
+## Positive Patterns
+[What we do — with code examples]
 
-## Anti-patterns ❌
-[Ce qu'on ne fait pas — avec exemples de ce qu'on évite]
+## Anti-patterns
+[What we avoid — with examples of what not to do]
 
-## Référence rapide
-[Tableau ou liste pour décision rapide]
+## Quick Reference
+[Table or list for fast decision-making]
 
-## ⚠️ Règles absolues
-[Courte liste — les invariants qui ne changent jamais]
+## Absolute Rules
+[Short list — invariants that never change]
 ```
 
-### Taille idéale
+### Ideal Size
 
-- **Trop court** (< 50 lignes) : pas assez de contexte, ne change pas le comportement
-- **Idéal** (100-300 lignes) : couvre les cas courants, lisible en < 2 minutes
-- **Trop long** (> 500 lignes) : dilue l'attention, sera partiellement ignoré
+- **Too short** (< 50 lines): not enough context, won't change behavior
+- **Ideal** (100-300 lines): covers common cases, readable in < 2 minutes
+- **Too long** (> 500 lines): dilutes attention, will be partially ignored
 
-### Skills à créer vs ne pas créer
+### Skills to Create vs Not Create
 
-✅ **Créer un skill pour :**
-- Des conventions qui s'appliquent à plusieurs projets (API, tests, sécurité)
-- Un projet spécifique avec une architecture complexe (NXIO)
-- Une stack technique peu connue (MicroPython, UE5 C++)
+**Create a skill for:**
+- Conventions that apply across multiple projects (API, tests, security)
+- A specific project with complex architecture (NXIO)
+- A less common tech stack (MicroPython, UE5 C++)
 
-❌ **Ne pas créer un skill pour :**
-- Des choses dans CLAUDE.md (règles globales → CLAUDE.md, pas un skill)
-- Des procédures one-shot → mettre dans un agent
-- Des références que tu n'utiliseras jamais (duplication de doc)
+**Do not create a skill for:**
+- Things that belong in CLAUDE.md (global rules -> CLAUDE.md, not a skill)
+- One-shot procedures -> put those in an agent
+- References you will never use (documentation duplication)
 
 ---
 
-## Ajouter un MCP Server
+## Adding an MCP Server
 
-Les MCP servers sont configurés dans `~/.claude/mcp.json` (géré par `claude mcp add`).
+MCP servers are configured in `~/.claude/mcp.json` (managed by `claude mcp add`).
 
-### Via install.sh (recommandé pour les MCP globaux)
+### Via install.sh (recommended for global MCPs)
 
 ```bash
-# Dans install.sh, section MCP servers :
+# In install.sh, MCP servers section:
 claude mcp add --scope user my-server \
   -e API_KEY="$MY_API_KEY" \
   -- npx -y @vendor/mcp-server-name
 ```
 
-### Via projet (.mcp.json dans le repo)
+### Via project (.mcp.json in the repo)
 
 ```json
 {
@@ -229,34 +229,34 @@ claude mcp add --scope user my-server \
 }
 ```
 
-### Conventions tools MCP
+### MCP Tool Conventions
 
 ```typescript
-// Nommage: snake_case, verb_noun
+// Naming: snake_case, verb_noun
 {
-  name: "get_actor_transform",    ✅
-  name: "list_blueprint_classes", ✅
-  name: "getTransform",           ❌ (camelCase)
-  name: "actor",                  ❌ (pas de verbe)
+  name: "get_actor_transform",    // correct
+  name: "list_blueprint_classes", // correct
+  name: "getTransform",           // wrong (camelCase)
+  name: "actor",                  // wrong (no verb)
 }
 
-// Description: anglais, précise, décrit ce que l'outil fait ET ses paramètres clés
+// Description: English, precise, describes what the tool does AND its key parameters
 {
   description: "Returns the world transform (location, rotation, scale) of an actor by its label.",
-  // Pas: "Gets actor info" (trop vague)
+  // Not: "Gets actor info" (too vague)
 }
 ```
 
-Pour créer un MCP server de A à Z, lire le skill `mcp-builder` (disponible dans les skills Cowork).
+To create an MCP server from scratch, read the `mcp-builder` skill (available in Cowork skills).
 
 ---
 
-## Checklist avant de commiter un nouveau composant
+## Checklist Before Committing a New Component
 
-- [ ] Le nom est en kebab-case et unique
-- [ ] La description dit clairement **quand** l'invoquer (pas juste ce qu'il fait)
-- [ ] Le modèle est le moins cher suffisant pour la tâche
-- [ ] Les outils sont limités au strict nécessaire
-- [ ] L'output format est documenté
-- [ ] Les règles (`## Rules`) listent les invariants
-- [ ] Le CLAUDE.md est mis à jour avec le nouveau composant dans le catalogue
+- [ ] Name is kebab-case and unique
+- [ ] Description clearly states **when** to invoke (not just what it does)
+- [ ] Model is the cheapest one sufficient for the task
+- [ ] Tools are limited to the strict minimum
+- [ ] Output format is documented
+- [ ] Rules (`## Rules`) list the invariants
+- [ ] CLAUDE.md is updated with the new component in the catalog

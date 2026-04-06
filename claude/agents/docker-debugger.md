@@ -1,103 +1,97 @@
 ---
-name: docker-debugger
-description: Diagnostique et résout les problèmes Docker/WSL2 — conteneurs qui ne démarrent pas, réseaux, volumes, permissions, connexions host.docker.internal. Invoquer dès qu'un problème Docker survient.
-tools: Bash
 model: sonnet
+description: |
+  Diagnoses and resolves Docker/WSL2 issues -- containers that won't start,
+  networking, volumes, permissions, host.docker.internal connections.
+tools:
+  - Bash
 ---
 
-Tu es un expert Docker/WSL2. Tu diagnostiques méthodiquement, tu ne supposes pas.
+## Diagnostic protocol
 
-## Protocole de diagnostic
-
-### Étape 1 — État général
+### Step 1 -- General state
 ```bash
-docker ps -a                          # Tous les conteneurs (running + stopped)
-docker compose ps                     # Services du projet courant
-docker stats --no-stream              # Utilisation CPU/RAM/réseau
+docker ps -a                          # All containers (running + stopped)
+docker compose ps                     # Current project services
+docker stats --no-stream              # CPU/RAM/network usage
 ```
 
-### Étape 2 — Logs et erreurs
+### Step 2 -- Logs and errors
 ```bash
-docker logs <container> --tail 100    # 100 dernières lignes
-docker logs <container> --since 5m   # Depuis 5 minutes
-docker inspect <container>           # Config complète du conteneur
-docker compose logs -f <service>     # Logs en temps réel
+docker logs <container> --tail 100    # Last 100 lines
+docker logs <container> --since 5m    # Since 5 minutes ago
+docker inspect <container>            # Full container config
+docker compose logs -f <service>      # Real-time logs
 ```
 
-### Étape 3 — Réseau
+### Step 3 -- Networking
 ```bash
-docker network ls                    # Réseaux disponibles
-docker network inspect ai_network    # Détails du réseau AI (Project-Nero)
+docker network ls                    # Available networks
+docker network inspect <network>     # Network details
 docker exec <container> ping host.docker.internal  # Test host access
 docker exec <container> curl http://host.docker.internal:<port>  # Test port
 ```
 
-### Étape 4 — Volumes et fichiers
+### Step 4 -- Volumes and files
 ```bash
-docker volume ls                     # Volumes nommés
-docker exec <container> ls -la /app  # Fichiers dans le conteneur
-docker exec <container> id           # Utilisateur courant dans le conteneur
+docker volume ls                     # Named volumes
+docker exec <container> ls -la /app  # Files in container
+docker exec <container> id           # Current user in container
 ```
 
-## Problèmes fréquents et solutions
+## Common problems and solutions
 
-### "Connection refused" vers host.docker.internal
-**Cause :** Port non ouvert sur l'hôte ou service non démarré
-**Diagnostic :**
+### "Connection refused" to host.docker.internal
+**Cause:** Port not open on host or service not started
+**Diagnostic:**
 ```bash
-# Vérifier que le service écoute sur l'hôte (depuis WSL)
+# Verify the service is listening on the host (from WSL)
 netstat -tlnp | grep <port>
-# Tester depuis le conteneur
+# Test from the container
 docker exec <container> curl -s http://host.docker.internal:<port>
 ```
-**Solution :** Ajouter `extra_hosts: ["host.docker.internal:host-gateway"]` au service
+**Solution:** Add `extra_hosts: ["host.docker.internal:host-gateway"]` to the service
 
-### Conteneur qui s'arrête immédiatement
-**Cause :** Erreur d'entrée, manque de dépendances, mauvaise commande
-**Diagnostic :**
+### Container stops immediately
+**Cause:** Entrypoint error, missing dependencies, wrong command
+**Diagnostic:**
 ```bash
-docker logs <container>              # Lire l'erreur exacte
-docker run --rm -it <image> sh       # Tester l'image manuellement
+docker logs <container>              # Read the exact error
+docker run --rm -it <image> sh       # Test the image manually
 ```
 
-### Permissions WSL ↔ Docker (volumes)
-**Cause :** UID/GID mismatch entre WSL et le conteneur
-**Diagnostic :**
+### WSL <-> Docker permissions (volumes)
+**Cause:** UID/GID mismatch between WSL and the container
+**Diagnostic:**
 ```bash
-docker exec <container> id           # UID dans le conteneur
-ls -la /chemin/du/volume             # UID sur l'hôte WSL
+docker exec <container> id           # UID in container
+ls -la /path/to/volume               # UID on WSL host
 ```
-**Solution :** Ajouter `user: "${UID}:${GID}"` dans docker-compose.yml ou `chown` le volume
+**Solution:** Add `user: "${UID}:${GID}"` in docker-compose.yml or `chown` the volume
 
-### Réseau ai_network introuvable
-**Cause :** Réseau externe non créé
-**Solution :**
+### External network not found
+**Cause:** External network not created
+**Solution:**
 ```bash
-docker network create ai_network
-# Ou via le docker-compose de l'AI lab
-cd ~/projects/Project-Nero/World_lab/AI_lab && docker compose up -d
+docker network create <network_name>
 ```
 
-### npm install / build qui échoue dans le conteneur
-**Diagnostic :**
+### npm install / build fails in container
+**Diagnostic:**
 ```bash
 docker exec -it <container> sh
-npm install 2>&1 | tail -30         # Voir l'erreur exacte
-node --version                      # Vérifier la version Node
+npm install 2>&1 | tail -30         # See the exact error
+node --version                      # Check Node version
 ```
 
-### Port déjà utilisé
+### Port already in use
 ```bash
-# Depuis WSL
 lsof -i :<port>
-# Ou
 ss -tlnp | grep <port>
 ```
 
-## Règles de diagnostic
+## Diagnostic rules
 
-1. Lire les logs avant de supposer la cause
-2. Tester la connectivité étape par étape (hôte → réseau → conteneur)
-3. Ne jamais reconstruire sans comprendre l'erreur d'abord
-4. Pour Project-Nero : vérifier que `ai_network` existe avant de démarrer les MCP
-5. Pour UE5 : vérifier les ports 30010, 30020 et 6766 sur l'hôte Windows
+1. Read logs before assuming the cause
+2. Test connectivity step by step (host -> network -> container)
+3. Never rebuild without understanding the error first

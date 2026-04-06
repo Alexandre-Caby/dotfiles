@@ -4,7 +4,7 @@
 
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
-    // Node.js requis pour Claude Code (npm) et MCP servers (npx)
+    // Node.js required for Claude Code (npm) and MCP servers (npx)
     "ghcr.io/devcontainers/features/node:1": {
       "version": "22"
     }
@@ -16,7 +16,6 @@
         "ms-python.python",
         "ms-python.vscode-pylance",
         "charliermarsh.ruff",
-        "ms-python.black-formatter",
         "ms-toolsai.jupyter"
       ],
       "settings": {

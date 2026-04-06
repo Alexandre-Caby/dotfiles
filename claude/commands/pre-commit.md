@@ -1,24 +1,24 @@
-# Pre-commit — Vérifications avant commit
+# Pre-commit — Pre-commit checks
 
-Exécute toutes les vérifications nécessaires avant de commiter. Si un check échoue, proposer le fix.
+Runs all necessary checks before committing. If a check fails, propose the fix.
 
-## Étapes
+## Steps
 
-### 1. Vérifier qu'il y a des changements à commiter
+### 1. Verify there are changes to commit
 
 ```bash
 git status --short
 ```
 
-Si rien, arrêter avec "Rien à commiter".
+If nothing, stop with "Nothing to commit".
 
-### 2. Checks parallèles
+### 2. Parallel checks
 
-Lancer tous les checks en parallèle :
+Run all checks in parallel:
 
 #### a) Linting
 ```bash
-# Détecter le runner et lancer
+# Detect the runner and run
 npx eslint . --ext .ts,.tsx --max-warnings 0 2>/dev/null || \
 ruff check . 2>/dev/null || \
 cargo clippy -- -D warnings 2>/dev/null || \
@@ -42,7 +42,7 @@ true
 
 #### d) Tests
 ```bash
-# Auto-detect et run
+# Auto-detect and run
 npx vitest run --reporter=verbose 2>/dev/null || \
 npx jest --ci 2>/dev/null || \
 python3 -m pytest -x -q 2>/dev/null || \
@@ -58,16 +58,16 @@ grep -rn "AKIA[A-Z0-9]" . | grep -v .git  # AWS keys
 grep -rn "sk-[a-zA-Z0-9]" . | grep -v .git | grep -v test  # API keys
 ```
 
-#### f) Fichiers interdits
+#### f) Forbidden files
 ```bash
-# Vérifier qu'on ne commite pas des fichiers sensibles
+# Verify we are not committing sensitive files
 git diff --staged --name-only | grep -E "\.(env|pem|key|p12|pfx)$" && \
-  echo "⛔ Fichier sensible dans le staging !" || true
+  echo "⛔ Sensitive file in staging!" || true
 git diff --staged --name-only | grep -E "(credentials|secrets)" && \
-  echo "⛔ Fichier credentials/secrets dans le staging !" || true
+  echo "⛔ Credentials/secrets file in staging!" || true
 ```
 
-### 3. Résultats
+### 3. Results
 
 ```
 ## Pre-commit check — [date]
@@ -76,26 +76,26 @@ git diff --staged --name-only | grep -E "(credentials|secrets)" && \
 ✅ Format        [passed/X files to fix]
 ✅ Types         [passed/X errors]
 ✅ Tests         [passed/X failed — X total]
-✅ Secrets       [clean/X TROUVÉS ⛔]
-✅ Fichiers      [clean/X BLOQUÉS ⛔]
+✅ Secrets       [clean/X FOUND ⛔]
+✅ Files         [clean/X BLOCKED ⛔]
 
-Verdict : ✅ OK to commit / ⛔ BLOQUÉ — corriger les erreurs ci-dessus
+Verdict: ✅ OK to commit / ⛔ BLOCKED — fix the errors above
 ```
 
-### 4. Si tout est vert
+### 4. If everything is green
 
-Proposer le message de commit en conventional commits :
+Propose the commit message in conventional commits:
 ```
-<type>(<scope>): <description courte>
+<type>(<scope>): <short description>
 
-<détails si nécessaire>
+<details if needed>
 ```
 
-Types : `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`
+Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`, `perf`, `ci`
 
-### 5. Si des erreurs sont détectées
+### 5. If errors are detected
 
-Pour chaque erreur :
-1. Afficher le problème
-2. Proposer le fix
-3. Demander : "Je corrige automatiquement ?" → si oui, corriger et re-run le check
+For each error:
+1. Display the problem
+2. Propose the fix
+3. Ask: "Should I fix this automatically?" -> if yes, fix and re-run the check

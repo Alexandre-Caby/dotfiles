@@ -1,110 +1,110 @@
-# Cleanup — Nettoyage dead code + AI slop + simplification
+# Cleanup — Dead code + AI slop + simplification cleanup
 
-Analyse le codebase et supprime le code mort, l'AI slop, et simplifie le code de manière sûre.
+Analyzes the codebase and safely removes dead code, AI slop, and simplifies code.
 
-## Paramètre
+## Parameter
 
-$ARGUMENTS = scope optionnel (ex: "src/", "fichier.ts", "tout")
+$ARGUMENTS = optional scope (e.g., "src/", "file.ts", "all")
 
-Si vide, analyser tout le projet.
+If empty, analyze the entire project.
 
-## Étapes
+## Steps
 
-### 1. Inventaire du code mort
+### 1. Dead code inventory
 
 ```bash
-# Node/TypeScript — exports non utilisés, fichiers orphelins
+# Node/TypeScript — unused exports, orphan files
 npx knip --no-progress 2>/dev/null
 
-# Python — code non atteint
+# Python — unreachable code
 python3 -m vulture . --min-confidence 80 2>/dev/null
 
 # Rust — dead code
 cargo clippy -- -W dead_code 2>/dev/null
 
-# Imports non utilisés (multi-langage)
+# Unused imports (multi-language)
 grep -rn "^import\|^from.*import\|^use " --include="*.ts" --include="*.py" --include="*.rs" . \
   | grep -v node_modules | grep -v .git
 ```
 
-### 2. Détection AI slop
+### 2. AI slop detection
 
-Scanner chaque fichier pour :
+Scan each file for:
 
-**Commentaires inutiles** (supprimer directement) :
-- `// increment i` au-dessus de `i++`
-- `// return the result` au-dessus de `return result`
-- `// constructor` au-dessus de `constructor()`
-- `// import X` au-dessus d'un import
-- Tout commentaire qui répète le code verbatim
+**Useless comments** (remove directly):
+- `// increment i` above `i++`
+- `// return the result` above `return result`
+- `// constructor` above `constructor()`
+- `// import X` above an import
+- Any comment that repeats the code verbatim
 
-**Filler code** (simplifier) :
-- Wrapper functions qui ne font que passer les args
-- Classes avec une seule méthode → fonction
-- Interfaces avec une seule implémentation → supprimer l'interface
-- `if (condition) { return true } else { return false }` → `return condition`
-- Variables intermédiaires inutiles (`const result = x; return result;` → `return x`)
+**Filler code** (simplify):
+- Wrapper functions that only pass through args
+- Classes with a single method -> function
+- Interfaces with a single implementation -> remove the interface
+- `if (condition) { return true } else { return false }` -> `return condition`
+- Unnecessary intermediate variables (`const result = x; return result;` -> `return x`)
 
-**Console/debug oubliés** (supprimer) :
-- `console.log` hors fichiers de config/CLI
-- `print()` de debug en Python
-- `dbg!()` en Rust
-- `printf` de debug en C
+**Forgotten console/debug** (remove):
+- `console.log` outside config/CLI files
+- Debug `print()` in Python
+- `dbg!()` in Rust
+- Debug `printf` in C
 
-### 3. Workflow de suppression sûre
+### 3. Safe removal workflow
 
-Pour chaque élément détecté :
+For each detected item:
 
-1. **Analyser** — vérifier que c'est réellement mort (pas de reflection, dynamic import, etc.)
-2. **Vérifier** — s'assurer que les tests passent avant la suppression
-3. **Supprimer** — retirer le code
-4. **Tester** — relancer les tests après suppression
-5. **Si tests cassés** → revert et marquer comme "faux positif"
+1. **Analyze** — verify it is actually dead (no reflection, dynamic import, etc.)
+2. **Verify** — ensure tests pass before removal
+3. **Remove** — delete the code
+4. **Test** — re-run tests after removal
+5. **If tests break** -> revert and mark as "false positive"
 
 ### 4. Simplification
 
-Après le nettoyage, chercher des simplifications :
+After cleanup, look for simplifications:
 
-- Boucles `for` → `map/filter/reduce` quand applicable
-- Chaînes de `if/else if` → `switch/match` ou lookup table
-- Fonctions > 50 lignes → extraire des sous-fonctions
-- Fichiers > 300 lignes → découper en modules
-- Dépendances utilisées pour une seule fonction → implémenter à la main si < 10 lignes
+- `for` loops -> `map/filter/reduce` when applicable
+- `if/else if` chains -> `switch/match` or lookup table
+- Functions > 50 lines -> extract sub-functions
+- Files > 300 lines -> split into modules
+- Dependencies used for a single function -> implement manually if < 10 lines
 
-### 5. Dépendances inutiles
+### 5. Unused dependencies
 
 ```bash
 # Node
 npx depcheck 2>/dev/null
 
-# Python — check unused imports dans requirements
+# Python — check unused imports in requirements
 pip list --not-required 2>/dev/null
 ```
 
-## Format de sortie
+## Output format
 
 ```
 ## 🧹 Cleanup — [date]
 
-### Dead code supprimé
-- [fichier] Fonction `foo()` — jamais appelée
-- [fichier] Import `bar` — non utilisé
-- [fichier] Variable `temp` — déclarée, jamais lue
+### Dead code removed
+- [file] Function `foo()` — never called
+- [file] Import `bar` — unused
+- [file] Variable `temp` — declared, never read
 
-### AI slop nettoyé
-- [X] commentaires paraphrase supprimés
-- [X] console.log/print supprimés
-- [X] variables intermédiaires simplifiées
+### AI slop cleaned
+- [X] paraphrase comments removed
+- [X] console.log/print removed
+- [X] intermediate variables simplified
 
-### Simplifications appliquées
-- [fichier] for loop → array.map()
-- [fichier] if/else chain → switch
+### Simplifications applied
+- [file] for loop -> array.map()
+- [file] if/else chain -> switch
 
-### Dépendances retirées
-- [package] — utilisé nulle part
+### Dependencies removed
+- [package] — used nowhere
 
-### Résultat
-- Lignes supprimées : X
-- Fichiers modifiés : X
-- Tests : ✅ tous passent après cleanup
+### Result
+- Lines removed: X
+- Files modified: X
+- Tests: ✅ all pass after cleanup
 ```

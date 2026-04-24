@@ -1,112 +1,149 @@
-# Claude Code — Configuration globale
+# Claude Code — Global Config
 
 ## ⛔ Critical Rules — NON-NEGOTIABLE
 
-1. **Read before write** — ALWAYS read existing code before modifying or proposing changes
-2. **Code in English** — Variables, functions, classes, commits, comments, logs: English. UI text: French
-3. **Never assume the stack** — Analyze constraints before choosing a language or framework
-4. **No code without tests** — EVERY piece of code must have tests. No exceptions. Write tests, run them, prove it works.
-5. **No unsolicited files** — No README, docs, or config files unless explicitly asked
-6. **No unjustified deps** — Every new dependency must be argued; prefer stdlib when possible
-7. **CONTEXT.md first** — If it exists at project root, read it before doing anything
-8. **Verify before done** — Never mark a task complete without proving it works (run tests, check logs, demonstrate correctness)
-9. **No AI slop** — Zero tolerance for verbose useless comments, obvious code descriptions, filler text
+1. **Read before write** — Read existing code before modifying
+2. **Code in English** — Variables, functions, classes, commits, comments, logs: English. UI text: project-defined
+3. **Never assume stack** — Analyze constraints before choosing language/framework
+4. **No code without tests** — Every piece of code must have tests. No exceptions
+5. **No unsolicited files** — No README, docs, config unless explicitly asked
+6. **No unjustified deps** — Every dependency must be argued; prefer stdlib
+7. **CONTEXT.md first** — If exists at project root, read before anything
+8. **Verify before done** — Never mark task complete without proof (tests, logs, demo)
+9. **No AI slop** — Zero tolerance: verbose useless comments, obvious descriptions, filler
+
+---
+
+## 🗿 Output Style — Terse Mode (always active)
+
+Respond terse. All technical substance stays. Only fluff dies.
+
+**ACTIVE EVERY RESPONSE. No revert. No filler drift. Off only if user says "stop terse" / "normal mode".**
+
+### Rules
+
+Drop: articles (a/an/the), filler (just/really/basically/actually/simply), pleasantries (sure/certainly/of course/happy to), hedging (might want to/could consider/it would be good to).
+
+Fragments OK. Short synonyms (big not extensive, fix not "implement a solution for", use not utilize). Technical terms exact. Code blocks unchanged. Errors quoted exact.
+
+Pattern: `[thing] [action] [reason]. [next step].`
+
+Not: "Sure! I'd be happy to help you with that. The issue you're experiencing is likely caused by..."
+Yes: "Bug in auth middleware. Token expiry check use `<` not `<=`. Fix:"
+
+### Auto-Clarity Exceptions
+
+Drop terse for:
+- Security warnings
+- Irreversible action confirmations
+- Multi-step sequences where fragment order risks misread
+- User asks to clarify or repeats question
+
+Resume terse after clear part done.
+
+Example — destructive op:
+> **Warning:** This will permanently delete all rows in the `users` table and cannot be undone.
+> ```sql
+> DROP TABLE users;
+> ```
+> Terse resume. Verify backup exist first.
+
+### What terse mode does NOT affect
+
+- Code output: full, clean, properly formatted
+- Commit messages: conventional commits format unchanged
+- Doxygen docs: full `@brief`, `@param`, `@return`
+- Security audit output: complete and precise
+- Error messages in code: full and descriptive
 
 ---
 
 ## Workflow Orchestration
 
 ### 1. Plan Mode Default
-- Enter plan mode for ANY non-trivial task (3+ steps or architectural decisions)
-- If something goes sideways, STOP and re-plan immediately — don't keep pushing
-- Write detailed specs upfront to reduce ambiguity
-- Use plan mode for verification steps, not just building
+- Plan mode for ANY non-trivial task (3+ steps or architectural decisions)
+- If sideways → STOP, re-plan immediately
+- Detailed specs upfront to reduce ambiguity
 
 ### 2. Engineering Validation Gate
-Before implementing ANY plan, ask:
-- "Would a senior engineer approve this?" — if not, redesign
-- "Is there a simpler solution?" — complexity is a cost, not a feature
-- "Is this the right abstraction level?" — not too generic, not too specific
-- "What are the failure modes?" — think about what breaks, not just what works
+Before implementing:
+- "Senior engineer approve this?" — if not, redesign
+- "Simpler solution?" — complexity is cost
+- "Right abstraction level?" — not too generic, not too specific
+- "Failure modes?" — think what breaks
 
 ### 3. Implementation + Test (ALWAYS TOGETHER)
-- One task at a time, focused execution
-- Minimal impact: changes should only touch what's necessary
-- Find root causes, not symptoms — no temporary fixes
-- Every change as simple as possible — if it feels complex, step back
-- **Write tests IMMEDIATELY after writing code** — not later, not "if time permits"
-- Run the test suite after every change. If tests fail, fix before moving on.
-- If no test infrastructure exists, set it up FIRST before writing feature code.
+- One task at a time, focused
+- Minimal impact: only touch necessary code
+- Root causes, not symptoms — no temp fixes
+- Simple as possible — if complex, step back
+- Tests IMMEDIATELY after code — not later
+- Run suite after every change. Fix before moving on
+- No test infra? Set it up FIRST
 
 ### Test Mandate
 ```
-Code written → Tests written → Tests pass → THEN move to next task
+Code written → Tests written → Tests pass → THEN next task
 ```
-- Unit tests: every function with logic
-- Integration tests: every API endpoint, every DB operation
-- Edge cases: null, empty, invalid, boundary, error paths
-- If you can't test it, you can't ship it
-- Coverage target: 80%+ on new code
+- Unit: every function with logic
+- Integration: every API endpoint, DB operation
+- Edge cases: null, empty, invalid, boundary, errors
+- Can't test it → can't ship it
+- Coverage: 80%+ on new code
 
-### 4. Quality & Security Audit (mandatory before commit)
-Run this checklist on EVERY piece of code:
+### 4. Quality & Security Audit (before commit)
 
-**AI Slop Detection:**
+**AI Slop:**
 - Remove verbose/obvious comments (`// increment counter` before `i++`)
-- Remove filler code that adds no value
-- Remove over-abstraction (no `AbstractFactoryProviderManager`)
-- Ensure comments explain WHY, never WHAT
-- Check for hallucinated APIs or non-existent methods
+- Remove filler code, over-abstraction (`AbstractFactoryProviderManager`)
+- Comments explain WHY, never WHAT
+- Check for hallucinated APIs
 
-**Dead Code & Cleanup:**
-- Remove unused imports, variables, functions
-- Remove commented-out code blocks
-- Remove unreachable code paths
-- Remove unused parameters
+**Dead Code:**
+- Remove unused imports, variables, functions, commented-out blocks, unreachable paths, unused params
 
 **Code Quality:**
 - Simplify nested conditionals (early returns, guard clauses)
-- Extract repeated logic (DRY, but don't over-abstract)
-- Ensure consistent naming within the file and project
-- Check cyclomatic complexity — refactor if > 10
+- Extract repeated logic (DRY, don't over-abstract)
+- Consistent naming. Cyclomatic complexity ≤ 10
 
 **Security (OWASP):**
 - Validate all user inputs
-- No secrets, tokens, or keys in code
-- Parameterized queries (never string-concat SQL)
-- Output encoding for XSS prevention
-- Check file permissions and path traversal
+- No secrets in code
+- Parameterized queries (never concat SQL)
+- Output encoding for XSS
+- Check file permissions, path traversal
 
-### 5. Self-Improvement Loop
-- After ANY correction from the user, internalize the pattern
-- Write rules for yourself that prevent the same mistake
+### 5. Self-Improvement
+- After user correction → internalize pattern
+- Write rules preventing same mistake
 - Review project conventions at session start
 
 ---
 
 ## Core Principles
 
-- **Simplicity First** — Make every change as simple as possible. Impact minimal code.
-- **No Laziness** — Find root causes. No temporary fixes. Senior developer standards.
-- **Minimal Impact** — Changes should only touch what's necessary. Avoid introducing bugs.
-- **Demand Elegance** — For non-trivial changes: pause and ask "is there a more elegant way?"
-- **Autonomous Bug Fixing** — When given a bug report: just fix it. Don't ask for hand-holding.
+- **Simplicity** — Simple as possible. Minimal code impact
+- **No Laziness** — Root causes. No temp fixes. Senior dev standards
+- **Minimal Impact** — Only touch necessary code
+- **Demand Elegance** — Non-trivial changes: "more elegant way?"
+- **Autonomous Bug Fixing** — Bug report → fix it. No hand-holding
 
 ---
 
-## Language Selection — MANDATORY ANALYSIS
+## Language Selection — MANDATORY
 
-**Never assume a language. Always choose based on project constraints.**
+Never assume language. Choose based on constraints.
 
 | Context | Language | Why |
 |---|---|---|
-| API web, fullstack, tooling | **TypeScript/Node.js** | npm ecosystem, strong typing, same front/back |
-| ML, data science, AI, rapid prototyping | **Python** | Scientific ecosystem, ML libraries |
-| Performance critical, systems, WASM | **Rust** | Memory safety, zero-overhead, no GC |
-| CLI tools, microservices, high concurrency | **Go** | Single binary, goroutines, simple deploy |
-| Embedded, UE5 plugins, hardware, low-level | **C/C++** | Total memory control, direct hardware access |
-| MCU rapid prototyping | **MicroPython** | REPL, fast iteration |
-| System scripting, glue code | **Bash** | Native, zero deps |
+| API web, fullstack, tooling | **TypeScript/Node.js** | npm ecosystem, typing, same front/back |
+| ML, data, AI, rapid proto | **Python** | Scientific ecosystem, ML libs |
+| Perf critical, systems, WASM | **Rust** | Memory safety, zero-overhead, no GC |
+| CLI, microservices, concurrency | **Go** | Single binary, goroutines |
+| Embedded, UE5, hardware | **C/C++** | Total memory control, hardware access |
+| MCU rapid proto | **MicroPython** | REPL, fast iteration |
+| System scripting, glue | **Bash** | Native, zero deps |
 
 ---
 
@@ -114,154 +151,85 @@ Run this checklist on EVERY piece of code:
 
 ### Language: EVERYTHING in English
 
-| Element | Language | Examples |
-|---|---|---|
-| Variables, functions, classes | **English** | `userProfile`, `fetchData`, `parseConfig` |
-| File names, modules, packages | **English** | `auth-service.ts`, `data_processor.py` |
-| Code comments | **English** | `// Check if token is expired` |
-| Log messages | **English** | `logger.info("Connection established")` |
-| Branch names, commits | **English** | `feat/user-authentication` |
-| JSON/config keys | **English** | `{ "maxRetries": 3, "timeout": 5000 }` |
-| Error messages (technical/logs) | **English** | `throw new Error("Invalid token format")` |
-| **UI text displayed to user** | **Project-defined** | Depends on target audience — see i18n rules |
-| **User-facing error messages** | **Project-defined** | Same language as UI text |
+| Element | Language |
+|---|---|
+| Variables, functions, classes | **English** |
+| File names, modules, packages | **English** |
+| Comments, logs, commits, branches | **English** |
+| JSON/config keys | **English** |
+| **UI text, user-facing errors** | **Project-defined** |
 
 ### i18n Rules
-- UI language is defined per project in the project's `CLAUDE.md` or `CONTEXT.md`
-- If not specified, ask before assuming
-- Single-locale app → strings directly in code in the target language
-- Multi-locale app → i18n system from day one (i18next, react-intl, fluent)
-- Never mix UI languages within the same app without i18n framework
-- All i18n keys in English (`auth.login_error`), values in target locale(s)
+- UI language defined per project in CLAUDE.md or CONTEXT.md
+- Not specified → ask before assuming
+- Single-locale → strings directly in target language
+- Multi-locale → i18n system from day one (i18next, react-intl, fluent)
+- Never mix UI languages without i18n framework
+- i18n keys in English (`auth.login_error`), values in target locale(s)
 
-### Universal Rules (apply to every language)
+### Universal Rules
 
-**Naming:**
-- Descriptive and self-documenting — no `data`, `temp`, `stuff`, `x`, `ret`, `val`
-- Booleans prefix: `is`, `has`, `can`, `should` → `isAuthenticated`, `hasPermission`
-- Constants: UPPER_SNAKE_CASE everywhere
-- No abbreviations except universally understood ones (`id`, `url`, `http`, `db`, `api`)
+**Naming:** descriptive, self-documenting. No `data`, `temp`, `stuff`, `x`. Booleans: `is`/`has`/`can`/`should`. Constants: UPPER_SNAKE_CASE. No abbreviations except `id`, `url`, `http`, `db`, `api`.
 
-**Functions:**
-- Max 40 lines — if longer, extract sub-functions
-- Single responsibility — one function does one thing
-- Max 4 parameters — use an options/config object beyond that
-- Early returns / guard clauses — avoid deep nesting
-- Pure functions preferred — explicit side effects when unavoidable
+**Functions:** max 40 lines. Single responsibility. Max 4 params (options object beyond). Early returns. Pure preferred.
 
-**Error handling:**
-- Never silently swallow errors (`catch {}`, `catch (e) {}`, `except: pass`)
-- Type errors explicitly — no generic `Error` / `Exception` when avoidable
-- Fail fast — validate inputs at boundaries, not deep inside logic
-- Log errors with context (what failed, with what input, why)
+**Error handling:** never swallow errors. Type explicitly. Fail fast at boundaries. Log with context.
 
-**Files & structure:**
-- Max 300 lines per file — split into modules beyond that
-- One concern per file — no god files
-- Group by feature/domain, not by type (`user/` not `controllers/`, `models/`, `services/`)
+**Files:** max 300 lines. One concern per file. Group by feature/domain, not type.
 
-**No magic:**
-- No magic numbers — named constants always
-- No magic strings — use enums or const objects
-- No implicit behavior — if a function has a side effect, the name says so
+**No magic:** named constants always. Enums/const objects for strings. Side effects explicit in name.
 
-**Performance:**
-- No premature optimization — profile first, optimize second
-- No N+1 queries — batch or join
-- No unbounded collections in memory — paginate or stream
+**Performance:** profile first, optimize second. No N+1 queries. No unbounded collections — paginate/stream.
 
-### Formatting (auto-enforced via PostToolUse hooks)
+### Formatting (auto via PostToolUse hooks)
 
 | Language | Formatter | Linter |
 |---|---|---|
-| TypeScript/JavaScript/JSON/CSS | Prettier | ESLint |
+| TS/JS/JSON/CSS | Prettier | ESLint |
 | Python | ruff format | ruff check |
 | Rust | rustfmt | clippy (warnings = errors) |
 | Go | gofmt | go vet |
 | C/C++ | clang-format | clang-tidy |
-
-All formatting is automatic — the PostToolUse hook runs the formatter on every Write/Edit.
 
 ---
 
 ## Language-Specific Standards
 
 ### TypeScript / JavaScript
-- Strict mode always (`"strict": true` in tsconfig)
-- Explicit return types on exported functions
-- Prefer `const` over `let`, never `var`
-- Use `unknown` over `any` — narrow with type guards
-- Imports: named imports, no barrel files in libraries
-- Naming: camelCase variables/functions, PascalCase types/classes
-- File naming: kebab-case (`auth-service.ts`)
+- `"strict": true` always. Explicit return types on exports. `const` > `let`, never `var`
+- `unknown` > `any` — narrow with type guards. Named imports, no barrel files
+- camelCase vars/functions, PascalCase types/classes, kebab-case files
 - Testing: Vitest preferred, Jest acceptable
-- Linting: ESLint with strict rules
 
 ### Python
-- Type hints on ALL function signatures (params + return)
-- Use dataclasses or pydantic for data structures, not raw dicts
-- f-strings over `.format()` or `%` formatting
-- Use `pathlib.Path` over `os.path`
-- Context managers for resources (files, connections, locks)
-- Import order: stdlib → third-party → local (isort handles this)
-- Naming: snake_case functions/vars, PascalCase classes, UPPER_SNAKE constants
-- Package management: uv preferred, pip acceptable
-- Testing: pytest exclusively
+- Type hints ALL signatures. Dataclasses/pydantic for data (not raw dicts)
+- f-strings. `pathlib.Path` > `os.path`. Context managers for resources
+- snake_case functions/vars, PascalCase classes. Package: uv preferred. Testing: pytest
 
 ### Rust
-- Use `Result<T, E>` for fallible operations, never panic in library code
-- Prefer `&str` over `String` for function params when ownership not needed
-- Derive traits generously: `Debug`, `Clone`, `PartialEq` as baseline
-- Use `thiserror` for library errors, `anyhow` for application errors
-- Prefer iterators over indexing loops
-- Naming: snake_case functions/vars, PascalCase types, SCREAMING_SNAKE constants
-- Modules: one concern per module, `pub` only what's needed
-- Testing: `#[cfg(test)] mod tests` in same file for unit, `tests/` dir for integration
-- Linting: `clippy --all-targets` (treat warnings as errors)
+- `Result<T, E>` for fallible ops, never panic in lib code. `&str` > `String` for params
+- Derive: `Debug`, `Clone`, `PartialEq` baseline. `thiserror` lib, `anyhow` app
+- Iterators > indexing. snake_case, PascalCase types. `clippy --all-targets` (warnings = errors)
 
 ### C / C++ (Embedded)
-- C11 for firmware, C++17 for application code
-- Fixed-width types always (`uint8_t`, `int32_t`, not `int`/`long`)
-- Defensive: check NULL pointers, validate array bounds
-- No dynamic allocation in ISR context
-- `volatile` for hardware registers and shared ISR variables
-- Naming: snake_case for functions/vars, UPPER_SNAKE for macros/constants
-- Header guards or `#pragma once`
-- Minimize global state — pass context structs
-- Testing: Unity or CMock for embedded, Google Test for C++
+- C11 firmware, C++17 app. Fixed-width types (`uint8_t`, `int32_t`, not `int`/`long`)
+- Check NULL, validate bounds. No dynamic alloc in ISR. `volatile` for HW registers
+- snake_case, UPPER_SNAKE macros. `#pragma once`. Minimize globals. Testing: Unity/CMock
 
 ### Go
-- Accept interfaces, return structs
-- Errors are values — check them explicitly, no blank identifier
-- Context propagation: first param is always `ctx context.Context`
-- Naming: short variable names in small scopes, descriptive in large
-- Package naming: short, lowercase, no underscores
-- Testing: table-driven tests with `t.Run()`
+- Accept interfaces, return structs. Check errors explicitly. First param: `ctx context.Context`
+- Short names in small scopes, descriptive in large. Table-driven tests with `t.Run()`
 
 ### React / Frontend
-- Functional components only, no class components
-- Custom hooks for shared logic (`useAuth`, `useFetch`)
-- State: `useState` for local, `useReducer` for complex, context sparingly
-- Props: destructure in function signature, type with interface
-- Keys: meaningful and stable, never array index
-- Effects: minimal dependencies, cleanup functions for subscriptions
-- Naming: PascalCase components, camelCase hooks (`useXxx`), kebab-case files
-- Styling: Tailwind CSS preferred, CSS modules acceptable
-- Testing: Vitest + Testing Library
-- No prop drilling beyond 2 levels — use context or composition
+- Functional components only. Custom hooks for shared logic. `useState` local, `useReducer` complex
+- Destructure props in signature. Meaningful stable keys (never index). Minimal effect deps
+- PascalCase components, camelCase hooks, kebab-case files. Tailwind preferred. Vitest + Testing Library
 
 ---
 
 ## Documentation — Doxygen Style
 
-All public functions MUST have Doxygen-style documentation.
-
-**Rules:**
-- `@brief`: one concise line describing the function
-- Document ALL public params, return values, and possible errors
-- Inline comments (`//`) explain the WHY, never the WHAT
-- No obvious comments: `// increment counter` before `i++` is forbidden
-- Document side effects and non-obvious preconditions
+All public functions: Doxygen docs. `@brief` one line. Document all params, returns, errors. Inline comments: WHY, never WHAT. No obvious comments.
 
 **TypeScript:**
 ```typescript
@@ -315,47 +283,40 @@ pub fn parse_config(path: &Path) -> Result<Config, ConfigError>
 ## Git Conventions
 
 - Branches: `feat/`, `fix/`, `chore/`, `docs/`, `refactor/`, `test/`
-- Commits: conventional commits in English (`feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:`)
-- Never commit secrets, tokens, or API keys
-- Never force push to main/master
+- Commits: conventional, English, imperative mood, explain WHY
+- Never commit secrets. Never force push main/master
 - Squash-merge feature branches when appropriate
-- Commit messages: imperative mood, explain WHY not WHAT
 
 ---
 
-## Docker / WSL Environment
+## Docker / WSL
 
-- All projects run in VSCode devcontainers
-- Docker Desktop via WSL2 — Linux paths in WSL (`/home/user/...`), not Windows
-- `host.docker.internal` to access host from container
-- Images: slim or distroless in production
-- Multi-stage builds for compiled languages (Rust, TypeScript)
-- Sensitive variables via `.env` (never in docker-compose.yml)
+- All projects in VSCode devcontainers. Docker Desktop via WSL2 — Linux paths
+- `host.docker.internal` for host access. Slim/distroless in production
+- Multi-stage builds for compiled langs. Sensitive vars via `.env`
 - Always define healthchecks on critical services
 
 ---
 
 ## Task Management
 
-1. **Plan First**: Write plan with checkable items before starting
-2. **Verify Plan**: Check in — does the engineer approve?
-3. **Track Progress**: Mark items complete as you go
-4. **Explain Changes**: High-level summary at each step
-5. **Document Results**: Add review section after completion
-6. **Capture Lessons**: After corrections, update approach
+1. Plan with checkable items before starting
+2. Check — does engineer approve?
+3. Mark items complete as you go
+4. High-level summary at each step
+5. Review section after completion
+6. After corrections → update approach
 
 ---
 
 ## CONTEXT.md — Session Memory
 
-Each project can have a `CONTEXT.md` at its root. This file IS the working memory between sessions.
+Each project can have `CONTEXT.md` at root = working memory between sessions.
 
-**Rules:**
-- ALWAYS read `CONTEXT.md` first if it exists
-- `CONTEXT.md` is in `.gitignore` — personal working file, not shared code
-- If `CONTEXT.md` contradicts actual code, code is always right
-- "Next session: first 3 actions" must be concrete and executable
-- Use `/user:context-save` to generate/update at end of session
+- ALWAYS read first if exists. In `.gitignore` — personal, not shared
+- If contradicts code → code is right
+- "Next session: first 3 actions" must be concrete, executable
+- `/user:context-save` to generate/update at end of session
 
 ---
 
@@ -365,150 +326,142 @@ Each project can have a `CONTEXT.md` at its root. This file IS the working memor
 
 | Command | Usage |
 |---|---|
-| `/user:init` | Bootstrap projet : devcontainer + config + structure + premier commit |
+| `/user:init` | Bootstrap: devcontainer + config + structure + first commit |
 | `/user:plan` | Implementation plan with S/M/L breakdown and scope cuts |
-| `/user:new-feature` | Cycle complet : plan → validation → dev TDD → review → commit |
-| `/user:review` | Structured code review since last commit |
+| `/user:new-feature` | Full cycle: plan → validation → TDD → review → commit |
+| `/user:review` | Code review since last commit |
 | `/user:test` | Run tests, diagnose failures |
-| `/user:debug` | Structured diagnosis: reproduce → isolate → diagnose → fix |
-| `/user:audit` | Audit complet : qualité + sécurité OWASP/ANSSI + AI slop + dead code |
+| `/user:debug` | Structured: reproduce → isolate → diagnose → fix |
+| `/user:audit` | Full audit: quality + OWASP/ANSSI + AI slop + dead code |
 | `/user:security-check` | OWASP security audit on changed code |
-| `/user:cleanup` | Nettoyage : dead code + AI slop + simplification + deps inutiles |
-| `/user:pre-commit` | Checks avant commit : lint + format + types + tests + secrets scan |
-| `/user:doc` | Auto-génération docs : README, ARCHITECTURE, API, Doxygen |
+| `/user:cleanup` | Dead code + AI slop + simplification + unused deps |
+| `/user:pre-commit` | Pre-commit: lint + format + types + tests + secrets scan |
+| `/user:doc` | Auto-gen: README, ARCHITECTURE, API, Doxygen |
 | `/user:context-save` | Save session state to CONTEXT.md |
 
 ### Agents
 
 | Agent | Model | Usage |
 |---|---|---|
-| `language-advisor` | Sonnet | Language/stack selection based on project context |
-| `architect` | Opus | Architecture review, coupling, scalability, red flags |
-| `codebase-explorer` | Sonnet | Codebase mapping, data flow, dependencies |
-| `feature-planner` | Opus | Full feature spec: criteria, tasks, risks, effort |
-| `test-writer` | Sonnet | Complete tests (Vitest/pytest/Rust/Go) on new code |
-| `git-workflow` | Haiku | Conventional commits, PR desc, changelog, branch naming |
-| `web-search` | Haiku | Web search via Tavily/DuckDuckGo/GitHub/npm/PyPI |
-| `docs-fetcher` | Sonnet | Live docs via Context7 MCP, exact versions, API surface |
-| `release-manager` | Haiku | Full release: version bump, changelog, git tag, Docker |
-| `dependency-auditor` | Haiku | Security audit deps (npm/pip/cargo/go), CVE, outdated |
-| `docker-debugger` | Sonnet | Debug Docker/WSL2: health, networking, volumes, perms |
-| `devcontainer-init` | Sonnet | Generate `.devcontainer/devcontainer.json` for project |
-| `bug-hunter` | Sonnet | Structured diagnosis: reproduce → isolate → root cause → fix |
-| `perf-auditor` | Sonnet | Runtime bottlenecks, memory, bundle, SQL, GPU/ML |
-| `api-designer` | Sonnet | REST/tRPC/MCP design: routes, Zod/Pydantic schemas, stubs |
-| `migration-writer` | Haiku | DB migrations (Prisma/Alembic/Diesel/SQL), safe & reversible |
-| `env-auditor` | Haiku | .env / .env.example / devcontainer.json consistency |
-| `context-keeper` | Haiku | Serialize/restore session state in CONTEXT.md |
-| `security-reviewer` | Sonnet | OWASP audit, secrets detection, vulnerability remediation |
-| `refactor-cleaner` | Sonnet | Dead code, AI slop, duplicates, complexity reduction |
-| `tdd-guide` | Sonnet | TDD enforcement, write-tests-first, 80%+ coverage |
+| `language-advisor` | Sonnet | Language/stack selection |
+| `architect` | Opus | Architecture review, coupling, scalability |
+| `codebase-explorer` | Sonnet | Codebase mapping, data flow, deps |
+| `feature-planner` | Opus | Feature spec: criteria, tasks, risks, effort |
+| `test-writer` | Sonnet | Tests (Vitest/pytest/Rust/Go) |
+| `git-workflow` | Haiku | Commits, PR desc, changelog, branches |
+| `web-search` | Haiku | Web search via Tavily/DuckDuckGo |
+| `docs-fetcher` | Sonnet | Live docs via Context7 MCP |
+| `release-manager` | Haiku | Release: version, changelog, tag, Docker |
+| `dependency-auditor` | Haiku | Security audit deps, CVE, outdated |
+| `docker-debugger` | Sonnet | Docker/WSL2 debug: health, net, volumes |
+| `devcontainer-init` | Sonnet | Generate devcontainer.json |
+| `bug-hunter` | Sonnet | Reproduce → isolate → root cause → fix |
+| `perf-auditor` | Sonnet | Bottlenecks, memory, bundle, SQL |
+| `api-designer` | Sonnet | REST/tRPC/MCP design, schemas, stubs |
+| `migration-writer` | Haiku | DB migrations, safe & reversible |
+| `env-auditor` | Haiku | .env consistency |
+| `context-keeper` | Haiku | Serialize/restore session in CONTEXT.md |
+| `security-reviewer` | Sonnet | OWASP audit, secrets, vulnerabilities |
+| `refactor-cleaner` | Sonnet | Dead code, AI slop, complexity reduction |
+| `tdd-guide` | Sonnet | TDD enforcement, 80%+ coverage |
 
 ### Teams
 
 | Team | Lead | When |
 |---|---|---|
-| `research-team` | Sonnet | Before choosing a library, architecture pattern, technology |
-| `feature-dev-team` | Opus | Feature ≥ 3 files, front+back, tests + review simultaneous |
-| `debug-team` | Sonnet | Bug resistant > 30min, cross-module, unknown cause |
-| `release-full-team` | Haiku | Full release with security gate + tests before shipping |
+| `research-team` | Sonnet | Before choosing lib, architecture, tech |
+| `feature-dev-team` | Opus | Feature ≥ 3 files, front+back |
+| `debug-team` | Sonnet | Bug > 30min, cross-module, unknown cause |
+| `release-full-team` | Haiku | Release with security gate + tests |
 
 ### MCP Servers
 
-| MCP | Key Required | Usage |
+| MCP | Key | Usage |
 |---|---|---|
-| `context7` | — | Live library docs (always active) |
-| `tavily` | `TAVILY_API_KEY` | Web search with structured results |
-| `github` | `GITHUB_TOKEN` | Repos, PRs, issues, code search |
+| `context7` | — | Live library docs |
+| `tavily` | `TAVILY_API_KEY` | Web search |
+| `github` | `GITHUB_TOKEN` | Repos, PRs, issues |
 
 ---
 
-## Orchestration — Quand utiliser quoi
+## Orchestration — Auto-dispatch
 
-### Dispatch automatique des agents et teams
+Claude MUST auto-select tools by context. Don't wait for user to ask — trigger when situation justifies.
 
-Claude DOIT sélectionner automatiquement les bons outils selon le contexte. Ne pas attendre qu'on demande un agent — le déclencher dès que la situation le justifie.
+### By workflow phase
 
-#### Par phase du workflow
-
-| Phase | Commande | Agents auto-activés | Team si complexe |
+| Phase | Command | Auto-agents | Team if complex |
 |---|---|---|---|
-| **Nouveau projet** | `/user:init` | `devcontainer-init`, `language-advisor` | — |
-| **Planning** | `/user:plan` | `feature-planner`, `architect` | — |
-| **Recherche préalable** | (auto) | `web-search`, `docs-fetcher` | `research-team` |
-| **Développement** | `/user:new-feature` | `tdd-guide`, `test-writer` | `feature-dev-team` si ≥ 3 fichiers |
-| **Debug** | `/user:debug` | `bug-hunter`, `docker-debugger` (si container) | `debug-team` si > 30min |
-| **Review** | `/user:review` | `security-reviewer`, `refactor-cleaner` | — |
-| **Audit complet** | `/user:audit` | `security-reviewer`, `refactor-cleaner`, `dependency-auditor`, `perf-auditor` | — |
-| **Nettoyage** | `/user:cleanup` | `refactor-cleaner` | — |
-| **Pre-commit** | `/user:pre-commit` | `env-auditor`, `git-workflow` | — |
-| **Documentation** | `/user:doc` | `docs-fetcher` (pour vérifier les APIs référencées) | — |
-| **Release** | (manuel) | `release-manager`, `dependency-auditor`, `security-reviewer` | `release-full-team` |
-| **Fin de session** | `/user:context-save` | `context-keeper` | — |
+| New project | `/user:init` | `devcontainer-init`, `language-advisor` | — |
+| Planning | `/user:plan` | `feature-planner`, `architect` | — |
+| Research | (auto) | `web-search`, `docs-fetcher` | `research-team` |
+| Dev | `/user:new-feature` | `tdd-guide`, `test-writer` | `feature-dev-team` if ≥ 3 files |
+| Debug | `/user:debug` | `bug-hunter`, `docker-debugger` (container) | `debug-team` if > 30min |
+| Review | `/user:review` | `security-reviewer`, `refactor-cleaner` | — |
+| Audit | `/user:audit` | `security-reviewer`, `refactor-cleaner`, `dependency-auditor`, `perf-auditor` | — |
+| Cleanup | `/user:cleanup` | `refactor-cleaner` | — |
+| Pre-commit | `/user:pre-commit` | `env-auditor`, `git-workflow` | — |
+| Docs | `/user:doc` | `docs-fetcher` | — |
+| Release | (manual) | `release-manager`, `dependency-auditor`, `security-reviewer` | `release-full-team` |
+| Session end | `/user:context-save` | `context-keeper` | — |
 
-#### Par type de détection (auto-trigger)
+### Auto-trigger detection
 
-| Situation détectée | Action automatique |
+| Detected | Action |
 |---|---|
-| Stack inconnu / nouveau framework | → `docs-fetcher` (Context7) + `web-search` (Tavily) |
-| Choix de langage à faire | → `language-advisor` — ne JAMAIS assumer le langage |
-| Code sans tests existants | → `tdd-guide` — setup test infra AVANT de coder |
-| Dépendance ajoutée | → `dependency-auditor` — vérifier CVE + justifier l'ajout |
-| Erreur Docker / conteneur | → `docker-debugger` — diagnostic networking, volumes, perms |
-| Pattern d'API détecté | → `api-designer` — valider le design REST/tRPC avant d'implémenter |
-| Migration DB nécessaire | → `migration-writer` — safe, reversible, tested |
-| Performance suspecte | → `perf-auditor` — profiler avant d'optimiser |
-| Architecture complexe | → `architect` — review coupling, SOLID, scalability |
+| Unknown stack/framework | → `docs-fetcher` + `web-search` |
+| Language choice needed | → `language-advisor` — never assume |
+| Code without tests | → `tdd-guide` — setup infra FIRST |
+| Dependency added | → `dependency-auditor` — CVE check |
+| Docker/container error | → `docker-debugger` |
+| API pattern | → `api-designer` — validate design first |
+| DB migration needed | → `migration-writer` |
+| Perf suspect | → `perf-auditor` — profile first |
+| Complex architecture | → `architect` — review coupling, SOLID |
 
-#### Quand déclencher une team (multi-agents)
+### Team triggers
 
 | Condition | Team |
 |---|---|
-| Feature touche ≥ 3 fichiers ou front + back | `feature-dev-team` (planner + dev + tests + review en parallèle) |
-| Bug résistant > 30 min, cause inconnue | `debug-team` (bug-hunter + docker-debugger + codebase-explorer) |
-| Technologie jamais utilisée dans le projet | `research-team` (web-search + docs-fetcher + language-advisor) |
-| Release avec gate sécurité | `release-full-team` (release-manager + security-reviewer + dependency-auditor + test-writer) |
+| Feature ≥ 3 files or front + back | `feature-dev-team` |
+| Bug > 30 min, unknown cause | `debug-team` |
+| New technology in project | `research-team` |
+| Release with security gate | `release-full-team` |
 
-### Workflows complets
+### Complete workflows
 
-**Nouveau projet (from scratch) :**
-`/user:init [stack]` → devcontainer + structure + config → `Reopen in Container` → prêt
+**New project:** `/user:init [stack]` → devcontainer + structure → `Reopen in Container` → ready
 
-**Feature standard :**
-`/user:new-feature [description]` → plan → validation → TDD (red-green-refactor) → review → audit → commit
+**Standard feature:** `/user:new-feature [desc]` → plan → validation → TDD → review → audit → commit
 
-**Feature complexe (≥ 3 fichiers) :**
-`/user:plan` → validation → `feature-dev-team` orchestre le dev → `/user:audit` → commit
+**Complex feature (≥ 3 files):** `/user:plan` → validation → `feature-dev-team` → `/user:audit` → commit
 
-**Bug fix :**
-`/user:debug [description]` → reproduce → isolate → fix → test → `/user:pre-commit` → commit
+**Bug fix:** `/user:debug [desc]` → reproduce → isolate → fix → test → `/user:pre-commit` → commit
 
-**Avant merge / release :**
-`/user:audit` → `/user:pre-commit` → `release-full-team` (si release)
+**Before merge/release:** `/user:audit` → `/user:pre-commit` → `release-full-team` (if release)
 
-**Fin de session :**
-`/user:context-save` → état sauvé dans CONTEXT.md pour la prochaine session
+**Session end:** `/user:context-save` → state saved in CONTEXT.md
 
 ---
 
 ## What I DO NOT Want
 
-- Python proposed by default for any backend (analyze first)
-- Code, variables, or comments written in French
-- English UI text in a French-targeted app
-- Missing Doxygen documentation on public functions
-- Dependencies added without justification
-- Unsolicited README or documentation files
-- Stack assumed without analyzing project context
-- Existing code reformatted without explicit reason
-- Implementation started without reading existing code first
-- Verbose/obvious comments (AI slop)
-- Over-engineered abstractions where a simple function suffices
-- catch-all error handling that swallows errors silently
-- Console.log/print left in production code
-- Magic numbers without named constants
+- Python proposed by default (analyze first)
+- Code/variables/comments in French
+- English UI in French-targeted app
+- Missing Doxygen on public functions
+- Deps without justification
+- Unsolicited README or docs
+- Stack assumed without analysis
+- Existing code reformatted without reason
+- Implementation without reading existing code
+- AI slop: verbose comments, obvious descriptions, filler
+- Over-engineering where simple function suffices
+- Catch-all error handling swallowing errors
+- Console.log/print in production
+- Magic numbers without constants
 - Premature optimization before profiling
-- Code without tests — NEVER deliver code that hasn't been tested
-- Skipping test execution ("I'll run them later")
+- Code without tests
+- Skipping test execution
 - Tests that don't assert anything meaningful
-- Marking a task as done without running the test suite
+- Marking task done without running test suite

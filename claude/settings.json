@@ -69,9 +69,9 @@
       "Edit",
       "Grep",
       "Glob",
-      "mcp__context7:*",
-      "mcp__tavily:*",
-      "mcp__github:*"
+      "mcp__context7",
+      "mcp__tavily",
+      "mcp__github"
     ],
     "deny": [
       "Bash(rm -rf /*)",
@@ -131,7 +131,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "notify-send 'Claude Code' 'Attention required' 2>/dev/null || true"
+            "command": "bash \"$HOME/dotfiles/claude/hooks/notify.sh\"",
+            "timeout": 5
           }
         ]
       }
@@ -142,10 +143,26 @@
         "hooks": [
           {
             "type": "command",
-            "command": "notify-send 'Claude Code' 'Task completed ✓' 2>/dev/null || true"
+            "command": "bash \"$HOME/dotfiles/claude/hooks/notify.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$HOME/dotfiles/claude/hooks/notify.sh\"",
+            "timeout": 5
           }
         ]
       }
     ]
-  }
+  },
+  "preferredNotifChannel": "terminal_bell",
+  "effortLevel": "xhigh",
+  "tui": "fullscreen"
 }

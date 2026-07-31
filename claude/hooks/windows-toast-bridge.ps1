@@ -89,6 +89,15 @@ function Show-Toast {
 "@)
 
     $toast = New-Object Windows.UI.Notifications.ToastNotification $document
+
+    # Same tag => a new toast replaces the previous one instead of stacking,
+    # so a burst of permission requests from one project shows one toast.
+    # The tag is derived from the title, which notify.sh scopes per project.
+    $tag = ($Title -replace '[^\w-]', '_')
+    if ($tag.Length -gt 60) { $tag = $tag.Substring(0, 60) }
+    $toast.Tag = $tag
+    $toast.Group = 'claude-code'
+
     [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($AppUserModelId).Show($toast)
 }
 

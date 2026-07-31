@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate settings.json
+        run: python3 -m json.tool claude/settings.json > /dev/null
+
+      - name: Bash syntax check
+        run: |
+          shopt -s globstar nullglob
+          for script in install.sh **/*.sh; do
+            bash -n "$script"
+          done
+
+      - name: shellcheck
+        run: |
+          command -v shellcheck > /dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck; }
+          shellcheck -S warning install.sh claude/hooks/*.sh
+
+      - name: Hook test suites
+        run: |
+          chmod +x claude/hooks/*.sh
+          claude/hooks/notify.test.sh
+          claude/hooks/guards.test.sh
+
+      - name: Install script smoke test
+        run: |
+          FAKE_HOME="$(mktemp -d)"
+          # Stub claude so the script neither downloads the real installer
+          # nor registers MCP servers against the runner.
+          STUB_BIN="$(mktemp -d)"
+          printf '#!/bin/sh\nexit 0\n' > "$STUB_BIN/claude"
+          chmod +x "$STUB_BIN/claude"
+          HOME="$FAKE_HOME" PATH="$STUB_BIN:$PATH" bash install.sh
+          for link in CLAUDE.md settings.json agents commands skills hooks; do
+            test -e "$FAKE_HOME/.claude/$link"
+          done

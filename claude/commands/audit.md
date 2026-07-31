@@ -67,7 +67,7 @@ For each file in scope:
 
 ## Phase 3 — Security (OWASP WSTG + ANSSI)
 
-Apply the same framework as `/user:security-check`:
+Apply the OWASP WSTG + ANSSI framework:
 - CONFIG, AUTHN, AUTHZ, SESS, INPVAL, CRYPT, BUSLOGIC
 - Pattern review (17 critical patterns)
 - CVSS v3.1 scoring per vulnerability

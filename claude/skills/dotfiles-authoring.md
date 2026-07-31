@@ -69,7 +69,7 @@ tools: [Read, Write, Edit, Bash, Glob, Grep]
 # Orchestration (teams only)
 tools: [Task, Read, Bash]
 
-# MCP access (context7, tavily, github)
+# MCP access (context7)
 tools: [mcp__context7__resolve-library-id, mcp__context7__get-library-docs]
 ```
 

@@ -69,9 +69,7 @@
       "Edit",
       "Grep",
       "Glob",
-      "mcp__context7",
-      "mcp__tavily",
-      "mcp__github"
+      "mcp__context7"
     ],
     "deny": [
       "Bash(rm -rf /*)",
@@ -105,6 +103,7 @@
       "Read(**/*.key)"
     ]
   },
+  "model": "opus[1m]",
   "hooks": {
     "PreToolUse": [
       {
@@ -112,7 +111,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/dotfiles/claude/hooks/pre-guard.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/pre-guard.sh\"",
             "timeout": 10
           }
         ]
@@ -124,7 +123,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/dotfiles/claude/hooks/post-format.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/post-format.sh\"",
             "timeout": 30
           }
         ]
@@ -136,7 +135,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/dotfiles/claude/hooks/notify.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/notify.sh\"",
             "timeout": 5
           }
         ]
@@ -148,7 +147,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/dotfiles/claude/hooks/notify.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/notify.sh\"",
             "timeout": 5
           }
         ]
@@ -160,7 +159,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash \"$HOME/dotfiles/claude/hooks/notify.sh\"",
+            "command": "bash \"$HOME/.claude/hooks/notify.sh\"",
             "timeout": 5
           }
         ]
@@ -169,6 +168,5 @@
   },
   "effortLevel": "xhigh",
   "tui": "fullscreen",
-  "preferredNotifChannel": "terminal_bell",
-  "model": "claude-fable-5[1m]"
+  "preferredNotifChannel": "terminal_bell"
 }

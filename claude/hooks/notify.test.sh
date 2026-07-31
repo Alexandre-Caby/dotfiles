@@ -9,7 +9,8 @@
 
 set -uo pipefail
 
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
 readonly NOTIFY="${SCRIPT_DIR}/notify.sh"
 readonly TEST_PORT=47899
 readonly LISTENER_READY_TIMEOUT_SECONDS=5

@@ -6,7 +6,8 @@
 
 set -uo pipefail
 
-readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly SCRIPT_DIR
 readonly PRE_GUARD="${SCRIPT_DIR}/pre-guard.sh"
 readonly POST_FORMAT="${SCRIPT_DIR}/post-format.sh"
 

@@ -19,6 +19,7 @@ command -v python3 >/dev/null 2>&1 || exit 0
 # The program goes through -c, not stdin: stdin must stay free for the payload.
 GUARD_PROGRAM=$(cat <<'PYTHON_GUARD'
 import json
+import re
 import sys
 
 BLOCKED_COMMAND_PATTERNS = [
@@ -44,16 +45,20 @@ def block(reason: str) -> None:
 
 
 def reads_secret_file(command: str) -> bool:
-    tokens = command.replace("|", " ").replace(";", " ").split()
-    for index, token in enumerate(tokens):
-        if token not in SECRET_READERS:
-            continue
-        for argument in tokens[index + 1 :]:
-            lowered = argument.lower()
-            if any(safe in lowered for safe in SECRET_SAFE_MARKERS):
+    # A reader only owns the arguments of its own command segment; without the
+    # split, `head -5 x; echo "(end secrets)"` would false-positive.
+    segments = re.split(r"[;|&\n]+", command)
+    for segment in segments:
+        tokens = segment.split()
+        for index, token in enumerate(tokens):
+            if token not in SECRET_READERS:
                 continue
-            if any(marker in lowered for marker in SECRET_MARKERS):
-                return True
+            for argument in tokens[index + 1 :]:
+                lowered = argument.lower()
+                if any(safe in lowered for safe in SECRET_SAFE_MARKERS):
+                    continue
+                if any(marker in lowered for marker in SECRET_MARKERS):
+                    return True
     return False
 
 

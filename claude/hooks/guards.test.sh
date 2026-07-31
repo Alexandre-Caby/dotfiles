@@ -60,6 +60,10 @@ assert_guard 'blocks head on credentials' 2 'head -5 ~/.aws/credentials'
 assert_guard 'blocks strings on a key file' 2 'strings ~/.ssh/id_rsa'
 assert_guard 'allows cat .env.example' 0 'cat .env.example'
 assert_guard 'allows the word secret outside a reader' 0 'grep -rn secret_rotation src/'
+assert_guard 'allows secret-words in a later command segment' 0 \
+  'grep -rn pattern . | head -10; echo "(end secrets scan)"'
+assert_guard 'still blocks a secret read in a later segment' 2 \
+  'ls -la; cat .env'
 
 # Non-Bash payloads and garbage input pass through.
 tests_run=$((tests_run + 1))

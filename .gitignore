@@ -42,3 +42,7 @@ claude/shell-snapshots/
 claude/todos/
 claude/plans/
 claude/claude
+
+# Written by Claude Code inside the skills folder: synced account skills and their trash
+claude/skills/synced/
+claude/skills/.trash/

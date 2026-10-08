@@ -103,7 +103,6 @@
       "Read(**/*.key)"
     ]
   },
-  "model": "opus[1m]",
   "hooks": {
     "PreToolUse": [
       {
@@ -167,6 +166,14 @@
     ]
   },
   "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-opus-5-5": {
+      "effortLevel": "high"
+    }
+  },
   "tui": "fullscreen",
-  "preferredNotifChannel": "terminal_bell"
+  "theme": "dark",
+  "preferredNotifChannel": "terminal_bell",
+  "remoteControlAtStartup": true,
+  "agentPushNotifEnabled": true
 }

@@ -16,39 +16,48 @@ If nothing, stop with "Nothing to commit".
 
 Run all checks in parallel:
 
+Each step runs every tool the project declares, and a failing tool stays a
+failure. A step that finds no tool reports "none", never a pass.
+
 #### a) Linting
 ```bash
-# Detect the runner and run
-npx eslint . --ext .ts,.tsx --max-warnings 0 2>/dev/null || \
-ruff check . 2>/dev/null || \
-cargo clippy -- -D warnings 2>/dev/null || \
-true
+fail=0
+if [ -f Cargo.toml ]; then cargo clippy --workspace --all-targets -- -D warnings || fail=1; fi
+if [ -f package.json ] && grep -q '"eslint"' package.json; then npx eslint . --max-warnings 0 || fail=1; fi
+if [ -f pyproject.toml ] && grep -q ruff pyproject.toml; then ruff check . || fail=1; fi
+echo "LINT_EXIT=$fail"
 ```
 
 #### b) Formatting
 ```bash
-npx prettier --check "**/*.{ts,tsx,js,jsx,json,css}" 2>/dev/null || \
-ruff format --check . 2>/dev/null || \
-cargo fmt --check 2>/dev/null || \
-true
+fail=0
+if [ -f Cargo.toml ]; then cargo fmt --all -- --check || fail=1; fi
+if [ -f package.json ] && grep -q '"prettier"' package.json; then npx prettier --check . || fail=1; fi
+if [ -f pyproject.toml ] && grep -q ruff pyproject.toml; then ruff format --check . || fail=1; fi
+echo "FORMAT_EXIT=$fail"
 ```
 
 #### c) Type checking
 ```bash
-npx tsc --noEmit 2>/dev/null || \
-python3 -m mypy . 2>/dev/null || \
-true
+# Rust is type-checked by the clippy build above.
+fail=0
+if [ -f tsconfig.json ]; then npx tsc --noEmit || fail=1; fi
+if [ -f pyproject.toml ] && grep -q mypy pyproject.toml; then python3 -m mypy . || fail=1; fi
+echo "TYPES_EXIT=$fail"
 ```
 
 #### d) Tests
 ```bash
-# Auto-detect and run
-npx vitest run --reporter=verbose 2>/dev/null || \
-npx jest --ci 2>/dev/null || \
-python3 -m pytest -x -q 2>/dev/null || \
-cargo test 2>/dev/null || \
-true
+fail=0; ran=0
+if [ -f Cargo.toml ]; then ran=1; cargo test --workspace || fail=1; fi
+if [ -f package.json ] && grep -q '"vitest"' package.json; then ran=1; npx vitest run || fail=1
+elif [ -f package.json ] && grep -q '"jest"' package.json; then ran=1; npx jest --ci || fail=1; fi
+if [ -f pytest.ini ] || { [ -f pyproject.toml ] && grep -q pytest pyproject.toml; }; then ran=1; python3 -m pytest -q || fail=1; fi
+echo "TESTS_EXIT=$fail RUNNERS=$ran"
 ```
+A test runner that selects nothing ("running 0 tests") is not a pass. A project
+whose sources sit below the root (a `ui/` package) declares its own
+`.claude/commands/pre-commit.md`.
 
 #### e) Secrets scan
 ```bash

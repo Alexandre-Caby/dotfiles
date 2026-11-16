@@ -37,14 +37,20 @@ echo "🔧 Installing dotfiles from $DOTFILES_DIR"
 # ── 1. Symlink Claude config into ~/.claude ──────────────────
 # First and unconditional: everything else is best-effort on top.
 echo "  → Symlinking ~/.claude items"
-if [ -d "$HOME/.claude" ] && [ -L "$HOME/.claude" ]; then
-  rm "$HOME/.claude"
+if [ -e "$HOME/.claude" ]; then
+  if [ -L "$HOME/.claude" ]; then
+    rm "$HOME/.claude"
+  else
+    rm -rf "$HOME/.claude"
+  fi
 fi
 mkdir -p "$HOME/.claude"
 for item in CLAUDE.md settings.json agents commands skills hooks; do
   ln -sfn "$CLAUDE_CONFIG/$item" "$HOME/.claude/$item"
 done
-chmod +x "$CLAUDE_CONFIG/hooks/"*.sh 2>/dev/null || true
+if [ -d "$CLAUDE_CONFIG/hooks" ]; then
+  find "$CLAUDE_CONFIG/hooks" -maxdepth 1 -name "*.sh" -exec chmod +x {} + 2>/dev/null || true
+fi
 echo "  ✓ ~/.claude items symlinked from $CLAUDE_CONFIG"
 
 # ── 2. curl (required for the Claude Code installer) ─────────
@@ -63,7 +69,7 @@ if ! command -v claude &>/dev/null; then
   echo "  → Installing Claude Code (native installer)"
   if curl -fsSL https://claude.ai/install.sh | bash; then
     export PATH="$HOME/.local/bin:$PATH"
-    echo "  ✓ Claude Code installed: $(claude --version 2>/dev/null || echo 'restart shell to use')"
+    echo "  ✓ Claude Code installed: $(claude --version 2>/dev/null || echo 'restart shell to use')\""
   else
     echo "  ✗ Claude Code installation failed"
   fi
@@ -88,12 +94,20 @@ else
 fi
 
 # ── 6. PATH for local binaries ────────────────────────────────
-if ! grep -q '\.local/bin' "$HOME/.bashrc" 2>/dev/null; then
-  echo 'export PATH="$HOME/.local/bin:$PATH"' >>"$HOME/.bashrc"
-fi
+for rc_file in "$HOME/.bashrc" "$HOME/.zshrc"; do
+  if [ -f "$rc_file" ]; then
+    if ! grep -q '\.local/bin' "$rc_file" 2>/dev/null; then
+      echo 'export PATH="$HOME/.local/bin:$PATH"' >>"$rc_file"
+      echo "  ✓ PATH added to $rc_file"
+    else
+      echo "  ✓ PATH already in $rc_file"
+    fi
+  fi
+done
 
 # ── 7. Post-install validation ────────────────────────────────
 echo ""
+
 echo "🔍 Validating installation..."
 ERRORS=0
 for link in CLAUDE.md settings.json agents commands skills hooks; do
